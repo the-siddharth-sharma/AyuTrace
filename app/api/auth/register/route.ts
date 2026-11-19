@@ -57,8 +57,8 @@ export async function POST(req: Request) {
       },
     });
 
-    // Create session and set cookie
-    await createSession(user.id, true);
+    // Create session and set cookie with primed cache
+    await createSession(user, true);
 
     return NextResponse.json(
       {

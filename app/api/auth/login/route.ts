@@ -22,11 +22,27 @@ export async function POST(req: Request) {
 
     const { email, password, rememberMe } = result.data;
 
-    // Find user
+    // Find user with tight projection
     const user = await prisma.user.findUnique({
       where: { email: email.toLowerCase().trim() },
-      include: {
-        facility: true,
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        passwordHash: true,
+        role: true,
+        licenseNumber: true,
+        department: true,
+        facilityId: true,
+        createdAt: true,
+        facility: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            city: true,
+          },
+        },
       },
     });
 
@@ -52,8 +68,8 @@ export async function POST(req: Request) {
       );
     }
 
-    // Create session and set cookie
-    await createSession(user.id, rememberMe);
+    // Create session and prime memory cache immediately
+    await createSession(user, rememberMe);
 
     return NextResponse.json({
       success: true,

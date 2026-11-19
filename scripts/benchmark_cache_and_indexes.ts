@@ -134,30 +134,86 @@ async function runAudit() {
   // ----------------------------------------------------
   console.log("3. Benchmarking Dashboard KPI Aggregation (/api/stats)...");
   const statsFetcher = async () => {
-    return Promise.all([
-      prisma.medicine.findMany({ select: { id: true, category: true, dosageForm: true } }),
-      prisma.medicineBatch.findMany({
-        where: { status: { notIn: ["depleted"] } },
-        include: {
-          medicine: true,
-          balances: { include: { location: { include: { facility: true } } } },
+    const totalMedicinesCount = await prisma.medicine.count();
+    const batches = await prisma.medicineBatch.findMany({
+      where: { status: { notIn: ["depleted"] } },
+      select: {
+        id: true,
+        batchNumber: true,
+        expiryDateText: true,
+        normalizedExpiryDate: true,
+        datePrecision: true,
+        status: true,
+        verifiedByStaff: true,
+        medicine: {
+          select: {
+            id: true,
+            name: true,
+            genericName: true,
+            strength: true,
+            dosageForm: true,
+            category: true,
+          },
         },
-        orderBy: { normalizedExpiryDate: "asc" },
-      }),
-      prisma.facility.findMany({
-        include: { locations: { include: { balances: true } } },
-      }),
-      prisma.stockMovement.findMany({
-        take: 12,
-        orderBy: { createdAt: "desc" },
-        include: {
-          batch: { include: { medicine: true } },
-          sourceLocation: { include: { facility: true } },
-          destinationLocation: { include: { facility: true } },
+        balances: {
+          select: {
+            quantity: true,
+            location: {
+              select: {
+                name: true,
+                facility: { select: { name: true } },
+              },
+            },
+          },
         },
-      }),
-      prisma.appSettings.findUnique({ where: { id: "default" } }),
-    ]);
+      },
+      orderBy: { normalizedExpiryDate: "asc" },
+    });
+    const facilities = await prisma.facility.findMany({
+      select: {
+        name: true,
+        type: true,
+        locations: {
+          select: {
+            balances: { select: { quantity: true } },
+          },
+        },
+      },
+    });
+    const movements = await prisma.stockMovement.findMany({
+      take: 12,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        quantity: true,
+        movementType: true,
+        reason: true,
+        notes: true,
+        performedBy: true,
+        createdAt: true,
+        batch: {
+          select: {
+            batchNumber: true,
+            medicine: { select: { name: true, strength: true } },
+          },
+        },
+        sourceLocation: {
+          select: { name: true, facility: { select: { name: true } } },
+        },
+        destinationLocation: {
+          select: { name: true, facility: { select: { name: true } } },
+        },
+      },
+    });
+    const settings = await prisma.appSettings.findUnique({
+      where: { id: "default" },
+      select: {
+        nearExpiryThresholdDays: true,
+        criticalExpiryThresholdDays: true,
+        urgentExpiryThresholdDays: true,
+      },
+    });
+    return [totalMedicinesCount, batches, facilities, movements, settings];
   };
 
   const t0ColdStats = performance.now();
@@ -225,6 +281,58 @@ async function runAudit() {
     cacheHitAvgMs: setCacheStats.avg,
     speedupFactor: `${Math.round(setDbStats.avg / Math.max(setCacheStats.avg, 0.01))}x faster`,
   });
+
+  // ----------------------------------------------------
+  // Test 5: Authentication & Session Verification Flow
+  // ----------------------------------------------------
+  console.log("5. Benchmarking Auth Login & Session Check...");
+  const sampleUser = await prisma.user.findFirst();
+  if (sampleUser) {
+    const authQuery = async () =>
+      prisma.user.findUnique({
+        where: { email: sampleUser.email },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          passwordHash: true,
+          role: true,
+          facilityId: true,
+        },
+      });
+
+    const t0ColdAuth = performance.now();
+    await authQuery();
+    const coldAuthMs = Math.round((performance.now() - t0ColdAuth) * 10) / 10;
+
+    const authDbRuns: number[] = [];
+    for (let i = 0; i < ITERATIONS; i++) {
+      await delay(60);
+      const t0 = performance.now();
+      await authQuery();
+      authDbRuns.push(performance.now() - t0);
+    }
+    const authDbStats = calcStats(authDbRuns);
+
+    // Session RAM Cache hit test
+    const ramSessionStore = new Map();
+    ramSessionStore.set("test-token", { user: sampleUser, expiresAt: Date.now() + 86400000 });
+    const ramCacheRuns: number[] = [];
+    for (let i = 0; i < ITERATIONS; i++) {
+      const t0 = performance.now();
+      ramSessionStore.get("test-token");
+      ramCacheRuns.push(performance.now() - t0);
+    }
+    const ramCacheStats = calcStats(ramCacheRuns);
+
+    results.push({
+      operation: "User Login & Session (/api/auth)",
+      coldMs: coldAuthMs,
+      indexedDbAvgMs: authDbStats.avg,
+      cacheHitAvgMs: ramCacheStats.avg,
+      speedupFactor: `${Math.round(authDbStats.avg / Math.max(ramCacheStats.avg, 0.01))}x faster`,
+    });
+  }
 
   console.log("\n==========================================================");
   console.log("       EMPIRICAL LATENCY BENCHMARK: CACHE & INDEXES        ");

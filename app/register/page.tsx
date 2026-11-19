@@ -47,6 +47,7 @@ export default function RegisterPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   useEffect(() => {
+    router.prefetch("/dashboard");
     if (user) {
       router.replace("/dashboard");
     }
@@ -119,7 +120,6 @@ export default function RegisterPage() {
       // Automatically sign in upon registration
       login(data.user);
       router.replace("/dashboard");
-      router.refresh();
     } catch (err) {
       setErrorMessage("Network error during registration. Please try again.");
       setIsLoading(false);

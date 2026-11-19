@@ -31,6 +31,7 @@ export default function LoginPage() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   React.useEffect(() => {
+    router.prefetch("/dashboard");
     if (user) {
       router.replace("/dashboard");
     }
@@ -66,10 +67,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Update auth context state
+      // Update auth context state and navigate smoothly without double re-render
       login(data.user);
       router.replace("/dashboard");
-      router.refresh();
     } catch (err) {
       setErrorMessage("Network or connection error. Please try again.");
       setIsLoading(false);

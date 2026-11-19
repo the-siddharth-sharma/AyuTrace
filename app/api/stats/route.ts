@@ -11,125 +11,127 @@ export async function GET(request: Request) {
     const facilityId = searchParams.get("facilityId") || "all";
 
     const data = await fetchWithCache(`stats:${facilityId}`, 15, async () => {
-      const [totalMedicinesCount, batches, facilities, movements, settings] = await Promise.all([
-        prisma.medicine.count(),
-        prisma.medicineBatch.findMany({
-          where: {
-            status: { notIn: ["depleted"] },
-            ...(facilityId !== "all"
-              ? {
-                  balances: {
-                    some: {
-                      location: { facilityId },
-                    },
-                  },
-                }
-              : {}),
-          },
-          select: {
-            id: true,
-            batchNumber: true,
-            expiryDateText: true,
-            normalizedExpiryDate: true,
-            datePrecision: true,
-            status: true,
-            verifiedByStaff: true,
-            medicine: {
-              select: {
-                id: true,
-                name: true,
-                genericName: true,
-                strength: true,
-                dosageForm: true,
-                category: true,
-              },
-            },
-            balances: {
-              select: {
-                quantity: true,
-                location: {
-                  select: {
-                    name: true,
-                    facility: {
-                      select: {
-                        name: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-          orderBy: { normalizedExpiryDate: "asc" },
-        }),
-        prisma.facility.findMany({
-          select: {
-            name: true,
-            type: true,
-            locations: {
-              select: {
+      const totalMedicinesCount = await prisma.medicine.count();
+
+      const batches = await prisma.medicineBatch.findMany({
+        where: {
+          status: { notIn: ["depleted"] },
+          ...(facilityId !== "all"
+            ? {
                 balances: {
-                  select: {
-                    quantity: true,
+                  some: {
+                    location: { facilityId },
+                  },
+                },
+              }
+            : {}),
+        },
+        select: {
+          id: true,
+          batchNumber: true,
+          expiryDateText: true,
+          normalizedExpiryDate: true,
+          datePrecision: true,
+          status: true,
+          verifiedByStaff: true,
+          medicine: {
+            select: {
+              id: true,
+              name: true,
+              genericName: true,
+              strength: true,
+              dosageForm: true,
+              category: true,
+            },
+          },
+          balances: {
+            select: {
+              quantity: true,
+              location: {
+                select: {
+                  name: true,
+                  facility: {
+                    select: {
+                      name: true,
+                    },
                   },
                 },
               },
             },
           },
-        }),
-        prisma.stockMovement.findMany({
-          take: 12,
-          orderBy: { createdAt: "desc" },
-          select: {
-            id: true,
-            quantity: true,
-            movementType: true,
-            reason: true,
-            notes: true,
-            performedBy: true,
-            createdAt: true,
-            batch: {
-              select: {
-                batchNumber: true,
-                medicine: {
-                  select: {
-                    name: true,
-                    strength: true,
-                  },
-                },
-              },
-            },
-            sourceLocation: {
-              select: {
-                name: true,
-                facility: {
-                  select: {
-                    name: true,
-                  },
-                },
-              },
-            },
-            destinationLocation: {
-              select: {
-                name: true,
-                facility: {
-                  select: {
-                    name: true,
-                  },
+        },
+        orderBy: { normalizedExpiryDate: "asc" },
+      });
+
+      const facilities = await prisma.facility.findMany({
+        select: {
+          name: true,
+          type: true,
+          locations: {
+            select: {
+              balances: {
+                select: {
+                  quantity: true,
                 },
               },
             },
           },
-        }),
-        prisma.appSettings.findUnique({
-          where: { id: "default" },
-          select: {
-            nearExpiryThresholdDays: true,
-            criticalExpiryThresholdDays: true,
-            urgentExpiryThresholdDays: true,
+        },
+      });
+
+      const movements = await prisma.stockMovement.findMany({
+        take: 12,
+        orderBy: { createdAt: "desc" },
+        select: {
+          id: true,
+          quantity: true,
+          movementType: true,
+          reason: true,
+          notes: true,
+          performedBy: true,
+          createdAt: true,
+          batch: {
+            select: {
+              batchNumber: true,
+              medicine: {
+                select: {
+                  name: true,
+                  strength: true,
+                },
+              },
+            },
           },
-        }),
-      ]);
+          sourceLocation: {
+            select: {
+              name: true,
+              facility: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          destinationLocation: {
+            select: {
+              name: true,
+              facility: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      });
+
+      const settings = await prisma.appSettings.findUnique({
+        where: { id: "default" },
+        select: {
+          nearExpiryThresholdDays: true,
+          criticalExpiryThresholdDays: true,
+          urgentExpiryThresholdDays: true,
+        },
+      });
 
     const nearDays = settings?.nearExpiryThresholdDays ?? 90;
     const criticalDays = settings?.criticalExpiryThresholdDays ?? 30;
