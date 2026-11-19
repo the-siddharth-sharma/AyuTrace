@@ -155,9 +155,12 @@ export default function LoginPage() {
                 >
                   Password
                 </label>
-                <span className="text-xs text-teal-700 hover:text-teal-800 font-semibold cursor-pointer">
-                  Hospital IT Reset?
-                </span>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-teal-700 hover:text-teal-800 font-semibold hover:underline"
+                >
+                  Forgot Password?
+                </Link>
               </div>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">

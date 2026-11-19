@@ -15,7 +15,7 @@ const PROTECTED_PREFIXES = [
 ];
 
 // Routes only accessible to unauthenticated guests
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

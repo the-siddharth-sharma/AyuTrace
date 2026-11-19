@@ -2,7 +2,6 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   Bell,
   ScanLine,
@@ -32,61 +31,8 @@ export function Navbar({
   selectedFacilityId = "all",
   onFacilityChange,
 }: NavbarProps) {
-  const pathname = usePathname();
   const { user, logout, isLoading: isAuthLoading } = useAuth();
   const { facilities } = useFacilities();
-
-  const getPageInfo = (path: string) => {
-    switch (path) {
-      case "/dashboard":
-        return {
-          title: "Clinical Inventory Overview",
-          subtitle: "Real-time stock visibility across wards and facilities. Because every dose matters.",
-        };
-      case "/scanner":
-        return {
-          title: "AI Medicine Scanner",
-          subtitle: "Evidence-grounded label parsing via Gemma 4. Mandatory pharmacist review required.",
-        };
-      case "/inventory":
-        return {
-          title: "Medicine Inventory Register",
-          subtitle: "Batch-wise stock balance, strength specifications & location allocations.",
-        };
-      case "/facilities":
-        return {
-          title: "Facilities & Storage Locations",
-          subtitle: "Track hospitals, clinics, outpatient dispensaries, and cold chain stockrooms.",
-        };
-      case "/transfers":
-        return {
-          title: "Inter-Facility Stock Transfers",
-          subtitle: "Atomic location-to-location reallocations with verified clinical audit trails.",
-        };
-      case "/expiry":
-        return {
-          title: "Medicine Expiry Monitor",
-          subtitle: "Statutory drug cutoff alerts, FEFO dispatch queues & unverified batch quarantine.",
-        };
-      case "/analytics":
-        return {
-          title: "Pharmaceutical Analytics",
-          subtitle: "Batch risk vectors, category allocations & future expiry exposure.",
-        };
-      case "/settings":
-        return {
-          title: "System Settings & Configuration",
-          subtitle: "Organization profile, statutory warning horizons & Gemma 4 API status.",
-        };
-      default:
-        return {
-          title: "AyuTrace",
-          subtitle: "Intelligent Medicine Tracking. Safer Healthcare Workflows.",
-        };
-    }
-  };
-
-  const { title, subtitle } = getPageInfo(pathname);
 
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -97,22 +43,15 @@ export function Navbar({
 
   return (
     <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-6 backdrop-blur-xs">
-      {/* Title & Healthcare Microcopy */}
-      <div className="flex flex-col">
-        <h1 className="text-base font-bold text-slate-900 leading-tight">
-          {title}
-        </h1>
-        <p className="text-[11px] text-slate-500 leading-none mt-0.5">
-          {subtitle}
-        </p>
-      </div>
+      {/* Free space on the front navbar */}
+      <div className="flex-1" />
 
       {/* Right Controls */}
       <div className="flex items-center gap-3">
         {/* Facility Selector */}
         {facilities.length > 0 && onFacilityChange && (
-          <div className="hidden lg:flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs">
-            <Building2 className="h-3.5 w-3.5 text-teal-700" />
+          <div className="hidden lg:flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs shrink-0">
+            <Building2 className="h-3.5 w-3.5 text-teal-700 shrink-0" />
             <select
               value={selectedFacilityId}
               onChange={(e) => onFacilityChange(e.target.value)}
@@ -128,15 +67,15 @@ export function Navbar({
           </div>
         )}
 
-        {/* Date Display */}
-        <div className="hidden sm:flex items-center gap-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200/60 rounded-lg px-2.5 py-1.5">
-          <Calendar className="h-3.5 w-3.5 text-slate-400" />
-          <span>{formattedDate}</span>
+        {/* Date Display (Strictly horizontal, non-wrapping) */}
+        <div className="hidden sm:flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200/60 rounded-lg px-3 py-1.5">
+          <Calendar className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+          <span className="whitespace-nowrap">{formattedDate}</span>
         </div>
 
         {/* Organization Tag */}
-        <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold text-teal-900 bg-teal-50 border border-teal-200/70 rounded-lg px-2.5 py-1.5">
-          <Shield className="h-3.5 w-3.5 text-teal-700" />
+        <div className="hidden md:flex items-center gap-1.5 whitespace-nowrap shrink-0 text-xs font-semibold text-teal-900 bg-teal-50 border border-teal-200/70 rounded-lg px-2.5 py-1.5">
+          <Shield className="h-3.5 w-3.5 text-teal-700 shrink-0" />
           <span className="truncate max-w-[150px]">{orgName}</span>
         </div>
 
