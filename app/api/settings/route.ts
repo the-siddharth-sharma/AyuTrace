@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { AppSettingsSchema } from "@/lib/validations/medicine";
 import { isGemmaConfigured } from "@/lib/ai/gemma";
 import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export async function GET() {
   try {
@@ -53,6 +54,14 @@ export async function GET() {
 
 export async function PUT(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Active session required to modify clinical settings." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validated = AppSettingsSchema.parse(body);
 

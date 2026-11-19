@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { StockAdjustmentSchema } from "@/lib/validations/medicine";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Active session required to adjust inventory." },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const validated = StockAdjustmentSchema.parse({
@@ -59,7 +68,7 @@ export async function POST(
           movementType: validated.reason,
           reason: `Stock adjusted by ${validated.quantityChange > 0 ? "+" : ""}${validated.quantityChange} units`,
           notes: validated.notes || null,
-          performedBy: validated.performedBy || "Staff Pharmacist",
+          performedBy: `${user.name} (${user.role})`,
         },
       });
 

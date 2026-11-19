@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { MedicineBatchEntrySchema } from "@/lib/validations/medicine";
 import { parseMedicineExpiryDate, evaluateMedicineExpiry } from "@/lib/inventory/dates";
 import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -97,6 +98,14 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Active session required to register medicine batches." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validated = MedicineBatchEntrySchema.parse(body);
 

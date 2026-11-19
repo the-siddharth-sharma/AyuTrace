@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { AUTH_COOKIE_NAME } from "@/lib/auth/constants";
 
-// All routes that require an authenticated healthcare session
+// All web UI routes that require an authenticated healthcare session
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/inventory",
@@ -22,11 +22,38 @@ export function middleware(request: NextRequest) {
   const sessionCookie = request.cookies.get(AUTH_COOKIE_NAME)?.value;
   const hasValidCookie = Boolean(sessionCookie && sessionCookie.trim().length >= 32);
 
+  // 1. Guard Clinical API Endpoints (Reject unauthenticated callers with 401 JSON)
+  if (pathname.startsWith("/api/")) {
+    const isPublicApi =
+      pathname.startsWith("/api/auth/login") ||
+      pathname.startsWith("/api/auth/register") ||
+      pathname.startsWith("/api/auth/forgot-password") ||
+      pathname.startsWith("/api/auth/logout") ||
+      (pathname === "/api/facilities" && request.method === "GET");
+
+    if (!isPublicApi && !hasValidCookie) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Unauthorized: Active clinical authentication session required.",
+        },
+        {
+          status: 401,
+          headers: {
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+          },
+        }
+      );
+    }
+
+    return NextResponse.next();
+  }
+
   const isProtectedRoute = PROTECTED_PREFIXES.some(
     (prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`)
   );
 
-  // 1. Guard protected portal pages
+  // 2. Guard protected portal pages
   if (isProtectedRoute) {
     if (!hasValidCookie) {
       const loginUrl = new URL("/login", request.url);
@@ -54,7 +81,7 @@ export function middleware(request: NextRequest) {
     return response;
   }
 
-  // 2. Redirect authenticated users away from /login and /register to /dashboard
+  // 3. Redirect authenticated users away from /login and /register to /dashboard
   const isAuthRoute = AUTH_ROUTES.some(
     (route) => pathname === route || pathname.startsWith(`${route}/`)
   );
@@ -69,12 +96,11 @@ export function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for:
-     * - api routes (they handle their own 401 JSON responses)
+     * Match all application and API paths except for static bundles & images:
      * - _next/static (static assets)
      * - _next/image (image optimization files)
      * - favicon.ico, icon.png, apple-icon.png, *.svg, *.png, *.jpg, *.jpeg
      */
-    "/((?!api|_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|icon.png|apple-icon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

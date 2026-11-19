@@ -189,7 +189,6 @@ export function ScannerWorkspace() {
           imageBase64: imagePreview,
           imageName: imageFile?.name || "",
           mimeType: imageFile?.type || "image/jpeg",
-          apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY || undefined,
         }),
       });
 

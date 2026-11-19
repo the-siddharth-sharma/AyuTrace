@@ -1,0 +1,28 @@
+# CodeRabbit Configuration for AyuTrace Healthcare Platform
+# Language: YAML
+version: "2"
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  auto_review:
+    enabled: true
+    drafts: false
+  tools:
+    ast-grep:
+      enabled: true
+    shellcheck:
+      enabled: true
+  path_instructions:
+    - path: "app/api/**"
+      instructions: "Enforce strict session authentication via getCurrentUser() or middleware checks. Ensure all mutation endpoints validate schemas with Zod, and audit logs record the authenticated user's ID and role."
+    - path: "lib/auth/**"
+      instructions: "Verify timing-safe password hashing (scryptSync with crypto.timingSafeEqual), cryptographically secure session entropy, and safe user data sanitization (never leaking password hashes or sensitive keys)."
+    - path: "prisma/**"
+      instructions: "Review schema for proper relational integrity, cascade protections, and composite indexes on high-cardinality status and timestamp queries."
+    - path: "**/*.tsx"
+      instructions: "Check for Cross-Site Scripting (XSS) risks. Prohibit dangerouslySetInnerHTML, unescaped user content, and unvalidated URL schemes (e.g. javascript:)."
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false

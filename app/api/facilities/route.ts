@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { FacilityCreateSchema } from "@/lib/validations/medicine";
 import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export async function GET() {
   try {
@@ -47,6 +48,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Active session required to register healthcare facilities." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validated = FacilityCreateSchema.parse(body);
 

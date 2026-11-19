@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { StockTransferSchema } from "@/lib/validations/medicine";
 import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export async function GET() {
   try {
@@ -38,6 +39,14 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "Unauthorized: Active session required to transfer medicine." },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const validated = StockTransferSchema.parse(body);
 
@@ -108,7 +117,7 @@ export async function POST(request: Request) {
           movementType: "transfer",
           reason: validated.reason,
           notes: validated.notes || null,
-          performedBy: validated.performedBy || "Staff Pharmacist",
+          performedBy: `${user.name} (${user.role})`,
         },
         include: {
           batch: {
