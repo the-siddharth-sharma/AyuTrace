@@ -11,6 +11,7 @@
 body {
   color: var(--foreground);
   background: var(--background);
+  font-family: var(--font-vt323), "VT323", monospace;
   font-feature-settings: "rlig" 1, "calt" 1;
 }
 

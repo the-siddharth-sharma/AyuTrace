@@ -42,14 +42,13 @@ const config: Config = {
       },
       fontFamily: {
         sans: [
-          "Inter",
-          "Geist",
+          "var(--font-vt323)",
+          "VT323",
+          "monospace",
           "-apple-system",
           "BlinkMacSystemFont",
           "Segoe UI",
           "Roboto",
-          "Helvetica Neue",
-          "Arial",
           "sans-serif",
         ],
       },

@@ -10,16 +10,12 @@ import {
   Eye,
   EyeOff,
   ShieldCheck,
-  CheckCircle2,
   AlertCircle,
   ArrowRight,
-  Sparkles,
-  Building2,
-  Stethoscope,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth/auth-context";
 
@@ -78,12 +74,6 @@ export default function LoginPage() {
       setErrorMessage("Network or connection error. Please try again.");
       setIsLoading(false);
     }
-  };
-
-  const fillDemoAccount = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword("Password123!");
-    setErrorMessage(null);
   };
 
   return (
@@ -231,47 +221,6 @@ export default function LoginPage() {
               )}
             </Button>
           </form>
-
-          {/* Quick Demo Logins Section */}
-          <div className="mt-6 border-t border-slate-100 pt-5">
-            <div className="flex items-center justify-between mb-2.5">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                <Sparkles className="h-3 w-3 text-teal-600" />
-                Demo Healthcare Profiles
-              </span>
-              <span className="text-[10px] text-slate-400">1-click fill</span>
-            </div>
-
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => fillDemoAccount("pharmacist@ayutrace.org")}
-                className="flex flex-col items-start p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 text-left transition-colors group cursor-pointer"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 group-hover:text-teal-900">
-                  <Stethoscope className="h-3.5 w-3.5 text-teal-700" />
-                  <span>Chief Pharmacist</span>
-                </div>
-                <div className="text-[10px] text-slate-500 mt-0.5 truncate w-full">
-                  Apex Hospital Central
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => fillDemoAccount("ananya@ayutrace.org")}
-                className="flex flex-col items-start p-2.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-teal-50 hover:border-teal-300 text-left transition-colors group cursor-pointer"
-              >
-                <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800 group-hover:text-teal-900">
-                  <Building2 className="h-3.5 w-3.5 text-teal-700" />
-                  <span>Staff Pharmacist</span>
-                </div>
-                <div className="text-[10px] text-slate-500 mt-0.5 truncate w-full">
-                  Community Dispensary
-                </div>
-              </button>
-            </div>
-          </div>
 
           {/* Link to Make Account */}
           <div className="mt-6 text-center text-xs text-slate-600 border-t border-slate-100 pt-4">

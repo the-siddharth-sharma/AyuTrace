@@ -1,7 +1,15 @@
 import type { Metadata } from "next";
+import { VT323 } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { SWRProvider } from "@/components/providers/swr-provider";
+
+const vt323 = VT323({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--font-vt323",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "AyuTrace — Every Dose Deserves Care.",
@@ -23,8 +31,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900">
+    <html lang="en" className={vt323.variable}>
+      <body className={`${vt323.className} min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}>
         <SWRProvider>
           <AuthProvider>{children}</AuthProvider>
         </SWRProvider>
