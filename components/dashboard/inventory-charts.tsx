@@ -150,6 +150,7 @@ export function InventoryCharts({
                   tick={{ fontSize: 11, fill: "#64748b" }}
                 />
                 <Tooltip
+                  cursor={false}
                   formatter={(val: number) => [`${val} packs`, "Stock In Hand"]}
                   contentStyle={{
                     backgroundColor: "#ffffff",
@@ -361,6 +362,7 @@ export function InventoryCharts({
                         tick={{ fontSize: 11, fill: "#64748b" }}
                       />
                       <Tooltip
+                        cursor={false}
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload as TimelineItem;
@@ -417,6 +419,7 @@ export function InventoryCharts({
                         tick={{ fontSize: 11, fill: "#64748b" }}
                       />
                       <Tooltip
+                        cursor={false}
                         content={({ active, payload }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload as TimelineItem;

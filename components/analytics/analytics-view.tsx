@@ -108,6 +108,7 @@ export function AnalyticsView() {
                     tick={{ fontSize: 11, fill: "#64748b" }}
                   />
                   <Tooltip
+                    cursor={false}
                     formatter={(val: number) => [`${val} units`, "Stock"]}
                     contentStyle={{
                       backgroundColor: "#ffffff",
@@ -145,6 +146,7 @@ export function AnalyticsView() {
                   <XAxis type="number" tick={{ fontSize: 11, fill: "#64748b" }} />
                   <YAxis dataKey="form" type="category" tick={{ fontSize: 11, fill: "#64748b" }} />
                   <Tooltip
+                    cursor={false}
                     formatter={(val: number) => [`${val} units`, "Units"]}
                     contentStyle={{
                       backgroundColor: "#ffffff",
@@ -273,6 +275,7 @@ export function AnalyticsView() {
                           tick={{ fontSize: 11, fill: "#64748b" }}
                         />
                         <Tooltip
+                          cursor={false}
                           content={({ active, payload }) => {
                             if (active && payload && payload.length) {
                               const data = payload[0].payload;
@@ -328,6 +331,7 @@ export function AnalyticsView() {
                           tick={{ fontSize: 11, fill: "#64748b" }}
                         />
                         <Tooltip
+                          cursor={false}
                           content={({ active, payload }) => {
                             if (active && payload && payload.length) {
                               const data = payload[0].payload;
