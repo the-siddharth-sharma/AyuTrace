@@ -80,6 +80,7 @@ export default function DashboardPage() {
         facilityData={stats?.inventoryByFacility || []}
         riskData={stats?.riskDistribution || []}
         timelineData={stats?.expiryTimeline || []}
+        monthlyTimeline={stats?.monthlyTimeline || []}
       />
 
       {/* Recent Activity Audit Trail */}

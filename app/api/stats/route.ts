@@ -149,21 +149,105 @@ export async function GET(request: Request) {
       { name: "Unverified / Missing", count: unverifiedCount, color: "#64748b" },
     ].filter((item) => item.count > 0 || batches.length === 0);
 
-    // Expiry timeline (next 6-12 months)
-    const timelineMap: Record<string, number> = {};
+    // Expiry timeline & Consecutive Monthly Breakdown
+    const monthBuckets: Record<
+      string,
+      {
+        dateKey: string;
+        date: Date;
+        month: string;
+        fullMonth: string;
+        units: number;
+        batchCount: number;
+        medicines: Set<string>;
+      }
+    > = {};
+
+    let earliestDate: Date | null = null;
+    let latestDate: Date | null = null;
+
     for (const b of evaluatedBatches) {
       if (b.normalizedExpiryDate) {
-        const monthYear = new Intl.DateTimeFormat("en-US", {
-          month: "short",
-          year: "2-digit",
-        }).format(new Date(b.normalizedExpiryDate));
-        timelineMap[monthYear] = (timelineMap[monthYear] || 0) + b.totalQuantity;
+        const d = new Date(b.normalizedExpiryDate);
+        const y = d.getFullYear();
+        const m = d.getMonth();
+        const dateKey = `${y}-${String(m + 1).padStart(2, "0")}`;
+        const monthLabel = d.toLocaleString("en-US", { month: "short", year: "2-digit" });
+        const fullMonthLabel = d.toLocaleString("en-US", { month: "long", year: "numeric" });
+
+        if (!earliestDate || d < earliestDate) earliestDate = new Date(y, m, 1);
+        if (!latestDate || d > latestDate) latestDate = new Date(y, m, 1);
+
+        if (!monthBuckets[dateKey]) {
+          monthBuckets[dateKey] = {
+            dateKey,
+            date: new Date(y, m, 1),
+            month: monthLabel,
+            fullMonth: fullMonthLabel,
+            units: 0,
+            batchCount: 0,
+            medicines: new Set(),
+          };
+        }
+
+        monthBuckets[dateKey].units += b.totalQuantity;
+        monthBuckets[dateKey].batchCount += 1;
+        if (b.medicine?.name) {
+          monthBuckets[dateKey].medicines.add(b.medicine.name);
+        }
       }
     }
-    const expiryTimeline = Object.entries(timelineMap).map(([month, units]) => ({
-      month,
-      units,
-    }));
+
+    // Active milestones sorted chronologically
+    const expiryTimeline = Object.values(monthBuckets)
+      .sort((a, b) => a.dateKey.localeCompare(b.dateKey))
+      .map((item) => ({
+        month: item.month,
+        fullMonth: item.fullMonth,
+        dateKey: item.dateKey,
+        units: item.units,
+        batchCount: item.batchCount,
+        medicines: Array.from(item.medicines),
+        hasExpiry: item.units > 0,
+      }));
+
+    // Consecutive month-by-month timeline (current month through latest expiry horizon)
+    const monthlyTimeline: Array<{
+      month: string;
+      fullMonth: string;
+      dateKey: string;
+      units: number;
+      batchCount: number;
+      medicines: string[];
+      hasExpiry: boolean;
+    }> = [];
+
+    const now = new Date();
+    const startMonth =
+      earliestDate && earliestDate < now
+        ? earliestDate
+        : new Date(now.getFullYear(), now.getMonth(), 1);
+    const endMonth = latestDate || new Date(now.getFullYear(), now.getMonth() + 11, 1);
+
+    const cursor = new Date(startMonth);
+    while (cursor <= endMonth) {
+      const y = cursor.getFullYear();
+      const m = cursor.getMonth();
+      const key = `${y}-${String(m + 1).padStart(2, "0")}`;
+      const bucket = monthBuckets[key];
+
+      monthlyTimeline.push({
+        month: cursor.toLocaleString("en-US", { month: "short", year: "2-digit" }),
+        fullMonth: cursor.toLocaleString("en-US", { month: "long", year: "numeric" }),
+        dateKey: key,
+        units: bucket ? bucket.units : 0,
+        batchCount: bucket ? bucket.batchCount : 0,
+        medicines: bucket ? Array.from(bucket.medicines) : [],
+        hasExpiry: Boolean(bucket && bucket.units > 0),
+      });
+
+      cursor.setMonth(cursor.getMonth() + 1);
+    }
 
     // Critical attention queue (top items needing immediate clinical audit)
     const criticalAttentionList = evaluatedBatches
@@ -192,6 +276,7 @@ export async function GET(request: Request) {
         quantityByDosageForm,
         riskDistribution,
         expiryTimeline,
+        monthlyTimeline,
         criticalAttentionList,
         recentStockMovements: movements,
       };
