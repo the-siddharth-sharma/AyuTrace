@@ -8,11 +8,21 @@
   --border: #e2e8f0;
 }
 
+html {
+  font-size: 18px;
+}
+
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-vt323), "VT323", monospace;
+  font-size: 18px;
+  line-height: 1.4;
   font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+input, button, select, textarea {
+  font-family: inherit;
 }
 
 /* Custom subtle scrollbar */

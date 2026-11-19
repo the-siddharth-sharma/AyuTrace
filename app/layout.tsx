@@ -32,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={vt323.variable}>
-      <body className={`${vt323.className} min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}>
+      <body className={`${vt323.className} min-h-screen bg-slate-50/70 font-sans text-[18px] text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}>
         <SWRProvider>
           <AuthProvider>{children}</AuthProvider>
         </SWRProvider>
