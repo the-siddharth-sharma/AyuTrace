@@ -45,8 +45,12 @@ input, button, select, textarea {
 
 /* Eliminate grey cursor/shadow overlay on Recharts bar charts */
 .recharts-tooltip-cursor,
-.recharts-rectangle.recharts-tooltip-cursor {
+.recharts-rectangle.recharts-tooltip-cursor,
+.recharts-cursor,
+.recharts-bar-cursor,
+rect.recharts-tooltip-cursor {
   fill: transparent !important;
   stroke: transparent !important;
   opacity: 0 !important;
+  pointer-events: none !important;
 }
