@@ -156,7 +156,7 @@ export default function RegisterPage() {
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
           Create Clinical Healthcare Account
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1.5 text-sm text-slate-500">
           Enroll your pharmacy, ward or facility into real-time batch traceability
         </p>
       </div>
@@ -165,7 +165,7 @@ export default function RegisterPage() {
         <Card className="border-slate-200 shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 animate-in fade-in">
+            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
               <div className="flex-1 font-medium">{errorMessage}</div>
             </div>
@@ -177,7 +177,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="name"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Full Name & Title <span className="text-rose-500">*</span>
                 </label>
@@ -193,7 +193,7 @@ export default function RegisterPage() {
                     placeholder="e.g. Dr. Priya Raman"
                     value={formData.name}
                     onChange={handleChange}
-                    className="pl-9 text-xs"
+                    className="pl-9 text-sm h-10"
                   />
                 </div>
               </div>
@@ -201,7 +201,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Work / Hospital Email <span className="text-rose-500">*</span>
                 </label>
@@ -217,7 +217,7 @@ export default function RegisterPage() {
                     placeholder="priya@hospital.org"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-9 text-xs"
+                    className="pl-9 text-sm h-10"
                   />
                 </div>
               </div>
@@ -228,7 +228,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="role"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Professional Role <span className="text-rose-500">*</span>
                 </label>
@@ -237,7 +237,7 @@ export default function RegisterPage() {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className="text-xs h-9 cursor-pointer"
+                  className="text-sm h-10 cursor-pointer"
                 >
                   {Object.entries(RoleLabels).map(([val, label]) => (
                     <option key={val} value={val}>
@@ -250,7 +250,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="licenseNumber"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   License / Reg. Number
                 </label>
@@ -265,7 +265,7 @@ export default function RegisterPage() {
                     placeholder="e.g. PCI-DL-2024-9182"
                     value={formData.licenseNumber}
                     onChange={handleChange}
-                    className="pl-9 text-xs"
+                    className="pl-9 text-sm h-10"
                   />
                 </div>
               </div>
@@ -276,7 +276,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="facilityId"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Affiliated Facility / Hospital
                 </label>
@@ -285,7 +285,7 @@ export default function RegisterPage() {
                   name="facilityId"
                   value={formData.facilityId}
                   onChange={handleChange}
-                  className="text-xs h-9 cursor-pointer"
+                  className="text-sm h-10 cursor-pointer"
                 >
                   {facilities.map((fac) => (
                     <option key={fac.id} value={fac.id}>
@@ -298,7 +298,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="department"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Department / Ward
                 </label>
@@ -313,7 +313,7 @@ export default function RegisterPage() {
                     placeholder="e.g. Central Dispensary / ICU"
                     value={formData.department}
                     onChange={handleChange}
-                    className="pl-9 text-xs"
+                    className="pl-9 text-sm h-10"
                   />
                 </div>
               </div>
@@ -324,7 +324,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="password"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Password <span className="text-rose-500">*</span>
                 </label>
@@ -340,7 +340,7 @@ export default function RegisterPage() {
                     placeholder="Min. 6 characters"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-9 pr-9 text-xs"
+                    className="pl-9 pr-9 text-sm h-10"
                   />
                   <button
                     type="button"
@@ -359,7 +359,7 @@ export default function RegisterPage() {
               <div>
                 <label
                   htmlFor="confirmPassword"
-                  className="block text-xs font-semibold text-slate-700 mb-1"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
                 >
                   Confirm Password <span className="text-rose-500">*</span>
                 </label>
@@ -375,7 +375,7 @@ export default function RegisterPage() {
                     placeholder="Re-enter password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
-                    className="pl-9 text-xs"
+                    className="pl-9 text-sm h-10"
                   />
                 </div>
               </div>
@@ -383,12 +383,12 @@ export default function RegisterPage() {
 
             {/* Compliance Acknowledgment Checkbox */}
             <div className="pt-2">
-              <label className="flex items-start gap-2.5 cursor-pointer text-xs text-slate-600">
+              <label className="flex items-start gap-2.5 cursor-pointer text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={agreedToTerms}
                   onChange={(e) => setAgreedToTerms(e.target.checked)}
-                  className="mt-0.5 h-3.5 w-3.5 rounded border-slate-300 text-teal-700 focus:ring-teal-600 cursor-pointer"
+                  className="mt-0.5 h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600 cursor-pointer"
                 />
                 <span className="leading-snug">
                   I certify that I am an authorized healthcare professional and agree to comply with
@@ -401,15 +401,15 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm"
+              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-sm">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span>Registering healthcare credentials...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 text-xs">
+                <div className="flex items-center justify-center gap-1.5 text-sm">
                   <span>Create Account & Enter AyuTrace</span>
                   <ArrowRight className="h-3.5 w-3.5" />
                 </div>
@@ -418,7 +418,7 @@ export default function RegisterPage() {
           </form>
 
           {/* Link back to Sign In */}
-          <div className="mt-6 text-center text-xs text-slate-600 border-t border-slate-100 pt-4">
+          <div className="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
             Already have an active clinical profile?{" "}
             <Link
               href="/login"
@@ -430,7 +430,7 @@ export default function RegisterPage() {
         </Card>
 
         {/* Security badges */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-[11px] text-slate-500">
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-1">
             <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
             <span>End-to-End Scrypt Encryption</span>

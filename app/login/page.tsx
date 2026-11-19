@@ -106,7 +106,7 @@ export default function LoginPage() {
         <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
           Sign in to your clinical account
         </h2>
-        <p className="mt-1 text-xs text-slate-500">
+        <p className="mt-1.5 text-sm text-slate-500">
           Statutory medicine inventory, lot traceability & FEFO dispatch controls
         </p>
       </div>
@@ -115,7 +115,7 @@ export default function LoginPage() {
         <Card className="border-slate-200 shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800 animate-in fade-in">
+            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 animate-in fade-in">
               <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
               <div className="flex-1 font-medium">{errorMessage}</div>
             </div>
@@ -125,7 +125,7 @@ export default function LoginPage() {
             <div>
               <label
                 htmlFor="email"
-                className="block text-xs font-semibold text-slate-700 mb-1"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
               >
                 Work / Hospital Email
               </label>
@@ -142,20 +142,20 @@ export default function LoginPage() {
                   placeholder="name@hospital.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 text-xs"
+                  className="pl-9 text-sm h-10"
                 />
               </div>
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-1">
+              <div className="flex items-center justify-between mb-1.5">
                 <label
                   htmlFor="password"
-                  className="block text-xs font-semibold text-slate-700"
+                  className="block text-sm font-medium text-slate-700"
                 >
                   Password
                 </label>
-                <span className="text-[11px] text-teal-700 hover:text-teal-800 font-medium cursor-pointer">
+                <span className="text-xs text-teal-700 hover:text-teal-800 font-semibold cursor-pointer">
                   Hospital IT Reset?
                 </span>
               </div>
@@ -172,7 +172,7 @@ export default function LoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 pr-9 text-xs"
+                  className="pl-9 pr-9 text-sm h-10"
                 />
                 <button
                   type="button"
@@ -189,16 +189,16 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-600">
+              <label className="flex items-center gap-2 cursor-pointer text-sm text-slate-600">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-3.5 w-3.5 rounded border-slate-300 text-teal-700 focus:ring-teal-600 cursor-pointer"
+                  className="h-4 w-4 rounded border-slate-300 text-teal-700 focus:ring-teal-600 cursor-pointer"
                 />
                 <span>Remember this workstation</span>
               </label>
-              <Badge variant="neutral" className="text-[10px] py-0">
+              <Badge variant="neutral" className="text-xs py-0.5">
                 GAMP 5 Audited
               </Badge>
             </div>
@@ -206,24 +206,24 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm"
+              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center gap-2 text-sm">
                   <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span>Verifying credentials...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 text-xs">
+                <div className="flex items-center justify-center gap-1.5 text-sm">
                   <span>Sign In to AyuTrace</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-4 w-4" />
                 </div>
               )}
             </Button>
           </form>
 
           {/* Link to Make Account */}
-          <div className="mt-6 text-center text-xs text-slate-600 border-t border-slate-100 pt-4">
+          <div className="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
             Need access to AyuTrace?{" "}
             <Link
               href="/register"
@@ -235,8 +235,8 @@ export default function LoginPage() {
         </Card>
 
         {/* Clinical Compliance Footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-center text-[11px] text-slate-400">
-          <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
+        <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-slate-400">
+          <ShieldCheck className="h-4 w-4 text-teal-600" />
           <span>Statutory Batch Expiry Verification Protocol • 21 CFR Part 11</span>
         </div>
       </div>

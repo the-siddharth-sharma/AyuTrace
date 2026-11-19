@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { VT323 } from "next/font/google";
+import { Plus_Jakarta_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/lib/auth/auth-context";
 import { SWRProvider } from "@/components/providers/swr-provider";
 
-const vt323 = VT323({
-  weight: "400",
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ["latin"],
-  variable: "--font-vt323",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-plus-jakarta-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });
 
@@ -31,8 +38,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={vt323.variable}>
-      <body className={`${vt323.className} min-h-screen bg-slate-50/70 font-sans text-[18px] text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}>
+    <html
+      lang="en"
+      className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
+    >
+      <body
+        className={`${plusJakartaSans.className} min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}
+      >
         <SWRProvider>
           <AuthProvider>{children}</AuthProvider>
         </SWRProvider>
