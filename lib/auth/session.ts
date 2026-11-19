@@ -166,46 +166,67 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
       sessionMemoryCache.delete(token);
     }
 
-    // 2. Fallback to database with tight field projection
-    const session = await prisma.session.findUnique({
-      where: { token },
-      select: {
-        id: true,
-        expiresAt: true,
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            licenseNumber: true,
-            department: true,
-            facilityId: true,
-            createdAt: true,
-            facility: {
-              select: {
-                id: true,
-                name: true,
-                type: true,
-                city: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    // 2. Single-query SQL JOIN for session + user + facility in 1 round trip
+    const rows = await prisma.$queryRaw<
+      Array<{
+        session_id: string;
+        session_expiresAt: Date;
+        user_id: string;
+        user_email: string;
+        user_name: string;
+        user_role: string;
+        user_licenseNumber: string | null;
+        user_department: string | null;
+        user_facilityId: string | null;
+        user_createdAt: Date;
+        facility_id: string | null;
+        facility_name: string | null;
+        facility_type: string | null;
+        facility_city: string | null;
+      }>
+    >`
+      SELECT s.id as session_id, s."expiresAt" as "session_expiresAt",
+             u.id as user_id, u.email as user_email, u.name as user_name, u.role as user_role,
+             u."licenseNumber" as "user_licenseNumber", u.department as "user_department",
+             u."facilityId" as "user_facilityId", u."createdAt" as "user_createdAt",
+             f.id as facility_id, f.name as facility_name, f.type as facility_type, f.city as facility_city
+      FROM "Session" s
+      JOIN "User" u ON s."userId" = u.id
+      LEFT JOIN "Facility" f ON u."facilityId" = f.id
+      WHERE s.token = ${token}
+      LIMIT 1
+    `;
 
-    if (!session) return null;
+    const row = rows[0];
+    if (!row) return null;
 
     // Check if session expired
-    if (session.expiresAt < new Date()) {
-      await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    if (new Date(row.session_expiresAt) < new Date()) {
+      await prisma.session.delete({ where: { id: row.session_id } }).catch(() => {});
       cookieStore.delete(AUTH_COOKIE_NAME);
       return null;
     }
 
-    const safeUser = sanitizeUser(session.user);
-    setCachedSession(token, safeUser, session.expiresAt);
+    const safeUser: SafeUser = {
+      id: row.user_id,
+      email: row.user_email,
+      name: row.user_name,
+      role: row.user_role,
+      licenseNumber: row.user_licenseNumber,
+      department: row.user_department,
+      facilityId: row.user_facilityId,
+      facility: row.facility_id
+        ? {
+            id: row.facility_id,
+            name: row.facility_name!,
+            type: row.facility_type!,
+            city: row.facility_city,
+          }
+        : null,
+      createdAt: row.user_createdAt,
+    };
+
+    setCachedSession(token, safeUser, row.session_expiresAt);
     return safeUser;
   } catch (error) {
     console.error("Error retrieving current user:", error);

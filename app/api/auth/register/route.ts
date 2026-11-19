@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { RegisterSchema } from "@/lib/validations/auth";
 import { hashPassword } from "@/lib/auth/password";
 import { createSession, sanitizeUser } from "@/lib/auth/session";
+import { setCachedUser } from "@/lib/auth/user-cache";
 
 export async function POST(req: Request) {
   try {
@@ -59,6 +60,7 @@ export async function POST(req: Request) {
 
     // Create session and set cookie with primed cache
     await createSession(user, true);
+    setCachedUser(user);
 
     return NextResponse.json(
       {

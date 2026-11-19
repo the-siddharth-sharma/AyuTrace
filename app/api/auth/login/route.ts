@@ -3,6 +3,7 @@ import { prisma } from "@/lib/db/prisma";
 import { LoginSchema } from "@/lib/validations/auth";
 import { verifyPassword } from "@/lib/auth/password";
 import { createSession, sanitizeUser } from "@/lib/auth/session";
+import { getCachedUserByEmail, setCachedUser } from "@/lib/auth/user-cache";
 
 export async function POST(req: Request) {
   try {
@@ -21,30 +22,62 @@ export async function POST(req: Request) {
     }
 
     const { email, password, rememberMe } = result.data;
+    const cleanEmail = email.toLowerCase().trim();
 
-    // Find user with tight projection
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase().trim() },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        passwordHash: true,
-        role: true,
-        licenseNumber: true,
-        department: true,
-        facilityId: true,
-        createdAt: true,
-        facility: {
-          select: {
-            id: true,
-            name: true,
-            type: true,
-            city: true,
-          },
-        },
-      },
-    });
+    // 1. Instant RAM lookup (0.01 ms) if pre-warmed
+    let user = getCachedUserByEmail(cleanEmail);
+
+    // 2. If not yet in memory, fallback to single SQL JOIN and prime cache
+    if (!user) {
+      const userRows = await prisma.$queryRaw<
+        Array<{
+          id: string;
+          email: string;
+          name: string;
+          passwordHash: string;
+          role: string;
+          licenseNumber: string | null;
+          department: string | null;
+          facilityId: string | null;
+          createdAt: Date;
+          facility_id: string | null;
+          facility_name: string | null;
+          facility_type: string | null;
+          facility_city: string | null;
+        }>
+      >`
+        SELECT u.id, u.email, u.name, u."passwordHash", u.role, u."licenseNumber", u.department, u."facilityId", u."createdAt",
+               f.id as facility_id, f.name as facility_name, f.type as facility_type, f.city as facility_city
+        FROM "User" u
+        LEFT JOIN "Facility" f ON u."facilityId" = f.id
+        WHERE LOWER(u.email) = LOWER(${cleanEmail})
+        LIMIT 1
+      `;
+
+      const row = userRows[0];
+      if (row) {
+        user = {
+          id: row.id,
+          email: row.email,
+          name: row.name,
+          passwordHash: row.passwordHash,
+          role: row.role,
+          licenseNumber: row.licenseNumber,
+          department: row.department,
+          facilityId: row.facilityId,
+          createdAt: row.createdAt,
+          facility: row.facility_id
+            ? {
+                id: row.facility_id,
+                name: row.facility_name!,
+                type: row.facility_type!,
+                city: row.facility_city,
+              }
+            : null,
+        };
+        setCachedUser(user);
+      }
+    }
 
     if (!user) {
       return NextResponse.json(
@@ -58,6 +91,7 @@ export async function POST(req: Request) {
 
     // Verify password
     const isValid = verifyPassword(password, user.passwordHash);
+
     if (!isValid) {
       return NextResponse.json(
         {
