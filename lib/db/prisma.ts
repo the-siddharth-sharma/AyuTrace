@@ -7,18 +7,22 @@ import { PrismaClient } from "@prisma/client";
  * are still being provisioned or omitted during the build phase.
  */
 const SUPABASE_DEFAULT_URL =
-  "postgresql://postgres.kyxalzuunmejkuljtpcl:Siddarth%40161120@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true";
+  "postgresql://postgres.kyxalzuunmejkuljtpcl:Siddarth%40161120@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1";
 
 function getDatabaseUrl(): string {
-  const envUrl = process.env.DATABASE_URL?.trim();
+  let envUrl = process.env.DATABASE_URL?.trim();
 
   // If a valid PostgreSQL/Supabase URL is provided, use it directly
-  if (envUrl && (envUrl.startsWith("postgres://") || envUrl.startsWith("postgresql://"))) {
-    return envUrl;
+  if (!envUrl || (!envUrl.startsWith("postgres://") && !envUrl.startsWith("postgresql://"))) {
+    envUrl = SUPABASE_DEFAULT_URL;
   }
 
-  // Fallback to primary Supabase pooler connection
-  return SUPABASE_DEFAULT_URL;
+  // Ensure connection limit is optimized for serverless PgBouncer pooler
+  if (envUrl.includes("pgbouncer=true") && !envUrl.includes("connection_limit")) {
+    envUrl += "&connection_limit=1";
+  }
+
+  return envUrl;
 }
 
 const globalForPrisma = globalThis as unknown as {
