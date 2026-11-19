@@ -26,11 +26,13 @@ async function runAudit() {
   console.log("   AyuTrace: Cache Memory & Indexing Latency Audit        ");
   console.log("==========================================================\n");
 
-  const ITERATIONS = 10;
+  const ITERATIONS = 3;
   const results: BenchmarkResult[] = [];
+  const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   // Warm up connection
   await prisma.$queryRaw`SELECT 1`;
+  await delay(100);
 
   // ----------------------------------------------------
   // Test 1: Facilities List Query (/api/facilities)
@@ -46,9 +48,10 @@ async function runAudit() {
   });
   const coldFacMs = Math.round((performance.now() - t0ColdFac) * 10) / 10;
 
-  // 10 Runs of Indexed Database (Uncached)
+  // 3 Runs of Indexed Database (Uncached)
   const facDbRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
+    await delay(60);
     const t0 = performance.now();
     await prisma.facility.findMany({
       include: { locations: { include: { balances: true } } },
@@ -58,7 +61,7 @@ async function runAudit() {
   }
   const facDbStats = calcStats(facDbRuns);
 
-  // 10 Runs of In-Memory Cache (Warm)
+  // 3 Runs of In-Memory Cache (Warm)
   await fetchWithCache("benchmark:facilities", 60, async () => coldFacData);
   const facCacheRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
@@ -91,9 +94,10 @@ async function runAudit() {
   });
   const coldInvMs = Math.round((performance.now() - t0ColdInv) * 10) / 10;
 
-  // 10 Runs of Indexed Database (Uncached)
+  // 3 Runs of Indexed Database (Uncached)
   const invDbRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
+    await delay(60);
     const t0 = performance.now();
     await prisma.medicineBatch.findMany({
       where: { status: { notIn: ["depleted"] } },
@@ -160,16 +164,17 @@ async function runAudit() {
   const coldStatsData = await statsFetcher();
   const coldStatsMs = Math.round((performance.now() - t0ColdStats) * 10) / 10;
 
-  // 10 Runs of Indexed Database (Uncached)
+  // 3 Runs of Indexed Database (Uncached)
   const statsDbRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
+    await delay(60);
     const t0 = performance.now();
     await statsFetcher();
     statsDbRuns.push(performance.now() - t0);
   }
   const statsDbStats = calcStats(statsDbRuns);
 
-  // 10 Runs of In-Memory Cache (Warm)
+  // 3 Runs of In-Memory Cache (Warm)
   await fetchWithCache("benchmark:stats", 60, async () => coldStatsData);
   const statsCacheRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
@@ -197,6 +202,7 @@ async function runAudit() {
 
   const setDbRuns: number[] = [];
   for (let i = 0; i < ITERATIONS; i++) {
+    await delay(60);
     const t0 = performance.now();
     await prisma.appSettings.findUnique({ where: { id: "default" } });
     setDbRuns.push(performance.now() - t0);

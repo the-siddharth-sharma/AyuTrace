@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { MedicineBatchEntrySchema } from "@/lib/validations/medicine";
 import { parseMedicineExpiryDate, evaluateMedicineExpiry } from "@/lib/inventory/dates";
-import { invalidateCache } from "@/lib/cache/api-cache";
+import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -17,68 +17,72 @@ export async function GET(request: Request) {
     const sortBy = searchParams.get("sortBy") || "normalizedExpiryDate";
     const sortOrder = searchParams.get("sortOrder") === "desc" ? "desc" : "asc";
 
-    const batches = await prisma.medicineBatch.findMany({
-      where: {
-        AND: [
-          category !== "all" ? { medicine: { category } } : {},
-          dosageForm !== "all" ? { medicine: { dosageForm } } : {},
-          status !== "all" ? { status } : {},
-          facilityId !== "all"
-            ? {
-                balances: {
-                  some: {
-                    location: {
-                      facilityId,
+    const cacheKey = `inv:${facilityId}:${status}:${category}:${dosageForm}:${sortBy}:${sortOrder}:${search}`;
+
+    const enriched = await fetchWithCache(cacheKey, 20, async () => {
+      const batches = await prisma.medicineBatch.findMany({
+        where: {
+          AND: [
+            category !== "all" ? { medicine: { category } } : {},
+            dosageForm !== "all" ? { medicine: { dosageForm } } : {},
+            status !== "all" ? { status } : {},
+            facilityId !== "all"
+              ? {
+                  balances: {
+                    some: {
+                      location: {
+                        facilityId,
+                      },
                     },
                   },
+                }
+              : {},
+            search
+              ? {
+                  OR: [
+                    { medicine: { name: { contains: search } } },
+                    { medicine: { genericName: { contains: search } } },
+                    { medicine: { manufacturer: { contains: search } } },
+                    { batchNumber: { contains: search } },
+                  ],
+                }
+              : {},
+          ],
+        },
+        include: {
+          medicine: true,
+          balances: {
+            include: {
+              location: {
+                include: {
+                  facility: true,
                 },
-              }
-            : {},
-          search
-            ? {
-                OR: [
-                  { medicine: { name: { contains: search } } },
-                  { medicine: { genericName: { contains: search } } },
-                  { medicine: { manufacturer: { contains: search } } },
-                  { batchNumber: { contains: search } },
-                ],
-              }
-            : {},
-        ],
-      },
-      include: {
-        medicine: true,
-        balances: {
-          include: {
-            location: {
-              include: {
-                facility: true,
               },
             },
           },
         },
-      },
-      orderBy:
-        sortBy === "name"
-          ? { medicine: { name: sortOrder } }
-          : sortBy === "normalizedExpiryDate"
-          ? { normalizedExpiryDate: sortOrder }
-          : { createdAt: sortOrder },
-    });
+        orderBy:
+          sortBy === "name"
+            ? { medicine: { name: sortOrder } }
+            : sortBy === "normalizedExpiryDate"
+            ? { normalizedExpiryDate: sortOrder }
+            : { createdAt: sortOrder },
+      });
 
-    // Compute dynamic aggregate stock and expiry evaluation for each batch
-    const enriched = batches.map((batch) => {
-      const totalQuantity = batch.balances.reduce((acc, b) => acc + b.quantity, 0);
-      const evaluation = evaluateMedicineExpiry(
-        batch.normalizedExpiryDate,
-        batch.verifiedByStaff
-      );
+      // Compute dynamic aggregate stock and expiry evaluation for each batch
+      return batches.map((batch) => {
+        const totalQuantity = batch.balances.reduce((acc, b) => acc + b.quantity, 0);
+        const evaluation = evaluateMedicineExpiry(
+          batch.normalizedExpiryDate,
+          batch.verifiedByStaff
+        );
 
-      return {
-        ...batch,
-        totalQuantity,
-        evaluation,
-      };
+        return {
+          ...batch,
+          totalQuantity,
+          evaluation,
+        };
+      });
     });
 
     return NextResponse.json({ success: true, data: enriched });

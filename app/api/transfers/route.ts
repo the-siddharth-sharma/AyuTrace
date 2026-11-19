@@ -1,31 +1,33 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { StockTransferSchema } from "@/lib/validations/medicine";
-import { invalidateCache } from "@/lib/cache/api-cache";
+import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
 
 export async function GET() {
   try {
-    const transfers = await prisma.stockMovement.findMany({
-      where: { movementType: "transfer" },
-      include: {
-        batch: {
-          include: {
-            medicine: true,
+    const transfers = await fetchWithCache("transfers:list", 30, async () => {
+      return prisma.stockMovement.findMany({
+        where: { movementType: "transfer" },
+        include: {
+          batch: {
+            include: {
+              medicine: true,
+            },
+          },
+          sourceLocation: {
+            include: {
+              facility: true,
+            },
+          },
+          destinationLocation: {
+            include: {
+              facility: true,
+            },
           },
         },
-        sourceLocation: {
-          include: {
-            facility: true,
-          },
-        },
-        destinationLocation: {
-          include: {
-            facility: true,
-          },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 50,
+        orderBy: { createdAt: "desc" },
+        take: 50,
+      });
     });
 
     return NextResponse.json({ success: true, data: transfers });

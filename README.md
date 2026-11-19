@@ -29,10 +29,9 @@ Healthcare facilities and pharmacies face persistent inventory challenges:
 - **Language:** TypeScript 5.6
 - **Styling & UI:** Tailwind CSS, Lucide React icons, accessible contrast palette (Teal, Emerald, White, Slate Navy)
 - **Visual Analytics:** Recharts (responsive facility stock bars, batch risk donuts, and 12-month expiry exposure curves)
-- **Database & ORM:** SQLite with Prisma ORM
+- **Database & ORM:** Cloud PostgreSQL (Supabase PgBouncer Pooler) with Prisma ORM
 - **Validation:** Zod schemas for medicine master data, lot batches, and transfers
 - **AI Vision Engine:** Google Gemma 4 (`gemma-4-26b-a4b-it`) via `@google/generative-ai` SDK
-- **Audit Preservation:** Previous prototype archived in [`python_prototype/`](file:///Users/siddharthsharma/Documents/Gemma4/python_prototype)
 
 ---
 

@@ -2,44 +2,49 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { AppSettingsSchema } from "@/lib/validations/medicine";
 import { isGemmaConfigured } from "@/lib/ai/gemma";
+import { fetchWithCache, invalidateCache } from "@/lib/cache/api-cache";
 
 export async function GET() {
   try {
-    let settings = await prisma.appSettings.findUnique({
-      where: { id: "default" },
-    });
-
-    if (!settings) {
-      settings = await prisma.appSettings.create({
-        data: {
-          id: "default",
-          orgName: "AyuTrace Health Network",
-          nearExpiryThresholdDays: 90,
-          criticalExpiryThresholdDays: 30,
-          urgentExpiryThresholdDays: 7,
-          dateFormat: "DD/MM/YYYY",
-        },
+    const data = await fetchWithCache("settings:default", 60, async () => {
+      let settings = await prisma.appSettings.findUnique({
+        where: { id: "default" },
       });
-    }
 
-    const facilities = await prisma.facility.findMany({
-      select: { id: true, name: true, type: true },
-      orderBy: { name: "asc" },
-    });
+      if (!settings) {
+        settings = await prisma.appSettings.create({
+          data: {
+            id: "default",
+            orgName: "AyuTrace Health Network",
+            nearExpiryThresholdDays: 90,
+            criticalExpiryThresholdDays: 30,
+            urgentExpiryThresholdDays: 7,
+            dateFormat: "DD/MM/YYYY",
+          },
+        });
+      }
 
-    const hasEnvKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== "");
-    const hasDbKey = Boolean(settings.geminiApiKey && settings.geminiApiKey.trim() !== "");
-    const isConfigured = hasEnvKey || hasDbKey;
+      const facilities = await prisma.facility.findMany({
+        select: { id: true, name: true, type: true },
+        orderBy: { name: "asc" },
+      });
 
-    return NextResponse.json({
-      success: true,
-      data: {
+      const hasEnvKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== "");
+      const hasDbKey = Boolean(settings.geminiApiKey && settings.geminiApiKey.trim() !== "");
+      const isConfigured = hasEnvKey || hasDbKey;
+
+      return {
         ...settings,
         geminiApiKey: settings.geminiApiKey ? "••••••••••••••••" : "",
         isGemmaConfigured: isConfigured,
         configuredModel: process.env.GEMMA_MODEL || "gemma-4-26b-a4b-it",
         facilities,
-      },
+      };
+    });
+
+    return NextResponse.json({
+      success: true,
+      data,
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, error: error.message }, { status: 500 });
@@ -72,6 +77,8 @@ export async function PUT(request: Request) {
         ...updateData,
       },
     });
+
+    invalidateCache("settings");
 
     const hasEnvKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim() !== "");
     const hasDbKey = Boolean(updated.geminiApiKey && updated.geminiApiKey.trim() !== "");

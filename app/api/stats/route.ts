@@ -11,61 +11,125 @@ export async function GET(request: Request) {
     const facilityId = searchParams.get("facilityId") || "all";
 
     const data = await fetchWithCache(`stats:${facilityId}`, 15, async () => {
-      const [medicines, batches, facilities, movements, settings] = await Promise.all([
-      prisma.medicine.findMany({ select: { id: true, category: true, dosageForm: true } }),
-      prisma.medicineBatch.findMany({
-        where: {
-          status: { notIn: ["depleted"] },
-          ...(facilityId !== "all"
-            ? {
-                balances: {
-                  some: {
-                    location: { facilityId },
+      const [totalMedicinesCount, batches, facilities, movements, settings] = await Promise.all([
+        prisma.medicine.count(),
+        prisma.medicineBatch.findMany({
+          where: {
+            status: { notIn: ["depleted"] },
+            ...(facilityId !== "all"
+              ? {
+                  balances: {
+                    some: {
+                      location: { facilityId },
+                    },
                   },
-                },
-              }
-            : {}),
-        },
-        include: {
-          medicine: true,
-          balances: {
-            include: {
-              location: {
-                include: {
-                  facility: true,
+                }
+              : {}),
+          },
+          select: {
+            id: true,
+            batchNumber: true,
+            expiryDateText: true,
+            normalizedExpiryDate: true,
+            datePrecision: true,
+            status: true,
+            verifiedByStaff: true,
+            medicine: {
+              select: {
+                id: true,
+                name: true,
+                genericName: true,
+                strength: true,
+                dosageForm: true,
+                category: true,
+              },
+            },
+            balances: {
+              select: {
+                quantity: true,
+                location: {
+                  select: {
+                    name: true,
+                    facility: {
+                      select: {
+                        name: true,
+                      },
+                    },
+                  },
                 },
               },
             },
           },
-        },
-        orderBy: { normalizedExpiryDate: "asc" },
-      }),
-      prisma.facility.findMany({
-        include: {
-          locations: {
-            include: {
-              balances: true,
+          orderBy: { normalizedExpiryDate: "asc" },
+        }),
+        prisma.facility.findMany({
+          select: {
+            name: true,
+            type: true,
+            locations: {
+              select: {
+                balances: {
+                  select: {
+                    quantity: true,
+                  },
+                },
+              },
             },
           },
-        },
-      }),
-      prisma.stockMovement.findMany({
-        take: 12,
-        orderBy: { createdAt: "desc" },
-        include: {
-          batch: {
-            include: { medicine: true },
+        }),
+        prisma.stockMovement.findMany({
+          take: 12,
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            quantity: true,
+            movementType: true,
+            reason: true,
+            notes: true,
+            performedBy: true,
+            createdAt: true,
+            batch: {
+              select: {
+                batchNumber: true,
+                medicine: {
+                  select: {
+                    name: true,
+                    strength: true,
+                  },
+                },
+              },
+            },
+            sourceLocation: {
+              select: {
+                name: true,
+                facility: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
+            destinationLocation: {
+              select: {
+                name: true,
+                facility: {
+                  select: {
+                    name: true,
+                  },
+                },
+              },
+            },
           },
-          sourceLocation: {
-            include: { facility: true },
+        }),
+        prisma.appSettings.findUnique({
+          where: { id: "default" },
+          select: {
+            nearExpiryThresholdDays: true,
+            criticalExpiryThresholdDays: true,
+            urgentExpiryThresholdDays: true,
           },
-          destinationLocation: {
-            include: { facility: true },
-          },
-        },
-      }),
-      prisma.appSettings.findUnique({ where: { id: "default" } }),
-    ]);
+        }),
+      ]);
 
     const nearDays = settings?.nearExpiryThresholdDays ?? 90;
     const criticalDays = settings?.criticalExpiryThresholdDays ?? 30;
@@ -261,7 +325,7 @@ export async function GET(request: Request) {
       .slice(0, 8);
 
       return {
-        registeredMedicines: medicines.length,
+        registeredMedicines: totalMedicinesCount,
         totalStockUnits,
         activeBatches: batches.length,
         expiredBatches: expiredCount,

@@ -32,6 +32,7 @@ model Facility {
   @@index([orgId])
   @@index([type])
   @@index([name])
+  @@index([city])
 }
 
 model StorageLocation {
@@ -101,7 +102,10 @@ model MedicineBatch {
   @@index([normalizedExpiryDate])
   @@index([status])
   @@index([status, normalizedExpiryDate])
+  @@index([normalizedExpiryDate, status])
   @@index([medicineId, status])
+  @@index([verifiedByStaff])
+  @@index([status, verifiedByStaff])
   @@index([createdAt])
 }
 
@@ -119,6 +123,7 @@ model StockBalance {
   @@index([locationId])
   @@index([quantity])
   @@index([locationId, quantity])
+  @@index([locationId, batchId])
 }
 
 model StockMovement {
@@ -141,6 +146,7 @@ model StockMovement {
   @@index([destinationLocationId])
   @@index([movementType])
   @@index([createdAt])
+  @@index([movementType, createdAt])
   @@index([batchId, createdAt])
 }
 
@@ -197,4 +203,5 @@ model PasswordResetOtp {
 
   @@index([email])
   @@index([expiresAt])
+  @@index([email, used, expiresAt])
 }
