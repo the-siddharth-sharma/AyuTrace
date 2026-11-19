@@ -3,9 +3,9 @@ import nodemailer from "nodemailer";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
 const SMTP_SECURE = process.env.SMTP_SECURE !== "false"; // default true for 465
-const SMTP_USER = process.env.SMTP_USER || "";
-const SMTP_PASS = process.env.SMTP_PASS || "";
-const SMTP_FROM = process.env.SMTP_FROM || '"AyuTrace Security" <noreply@ayutrace.org>';
+const SMTP_USER = process.env.SMTP_USER || "info.ayutrace@gmail.com";
+const SMTP_PASS = process.env.SMTP_PASS || "snyqsidbrfkznirg";
+const SMTP_FROM = process.env.SMTP_FROM || '"AyuTrace Security" <info.ayutrace@gmail.com>';
 
 /**
  * AyuTrace Mailer Transporter (Google Workspace / Gmail SMTP)
