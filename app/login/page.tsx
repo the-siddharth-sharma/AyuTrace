@@ -139,7 +139,7 @@ export default function LoginPage() {
                   type="email"
                   autoComplete="email"
                   required
-                  placeholder="pharmacist@hospital.org"
+                  placeholder="name@hospital.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9 text-xs"
