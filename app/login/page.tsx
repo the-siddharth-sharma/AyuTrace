@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import {
   Lock,
   Mail,
@@ -12,6 +11,7 @@ import {
   ShieldCheck,
   AlertCircle,
   ArrowRight,
+  UserCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +20,6 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/lib/auth/auth-context";
 
 export default function LoginPage() {
-  const router = useRouter();
   const { user, login } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -29,23 +28,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-
-  React.useEffect(() => {
-    router.prefetch("/dashboard");
-    if (user) {
-      router.replace("/dashboard");
-    }
-  }, [user, router]);
-
-  // Trap back navigation & swipe-left gestures to prevent returning to authenticated sessions
-  React.useEffect(() => {
-    window.history.pushState(null, "", window.location.href);
-    const handlePopState = () => {
-      window.history.pushState(null, "", window.location.href);
-    };
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,9 +49,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Update auth context state and navigate smoothly without double re-render
+      // Update auth context state and perform a clean browser navigation to dashboard
       login(data.user);
-      router.replace("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
       setErrorMessage("Network or connection error. Please try again.");
       setIsLoading(false);
@@ -113,6 +95,25 @@ export default function LoginPage() {
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
         <Card className="border-slate-200 shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
+          {/* Active Session Notice Banner */}
+          {user && (
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-lg border border-teal-200 bg-teal-50/80 p-3 text-xs text-teal-900 animate-in fade-in">
+              <div className="flex items-center gap-2 min-w-0">
+                <UserCheck className="h-4 w-4 text-teal-700 shrink-0" />
+                <span className="truncate">
+                  Signed in as <strong className="font-semibold">{user.name}</strong>
+                </span>
+              </div>
+              <Link
+                href="/dashboard"
+                className="inline-flex items-center gap-1 font-bold text-teal-700 hover:text-teal-800 underline underline-offset-2 shrink-0 text-xs"
+              >
+                <span>Dashboard</span>
+                <ArrowRight className="h-3 w-3" />
+              </Link>
+            </div>
+          )}
+
           {/* Error Banner */}
           {errorMessage && (
             <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 animate-in fade-in">

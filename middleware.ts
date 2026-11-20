@@ -14,9 +14,6 @@ const PROTECTED_PREFIXES = [
   "/analytics",
 ];
 
-// Routes only accessible to unauthenticated guests
-const AUTH_ROUTES = ["/login", "/register", "/forgot-password"];
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const sessionCookie = request.cookies.get(AUTH_COOKIE_NAME)?.value;
@@ -80,15 +77,6 @@ export function middleware(request: NextRequest) {
     response.headers.set("Pragma", "no-cache");
     response.headers.set("Expires", "0");
     return response;
-  }
-
-  // 3. Redirect authenticated users away from /login and /register to /dashboard
-  const isAuthRoute = AUTH_ROUTES.some(
-    (route) => pathname === route || pathname.startsWith(`${route}/`)
-  );
-  if (isAuthRoute && hasValidCookie) {
-    const dashboardUrl = new URL("/dashboard", request.url);
-    return NextResponse.redirect(dashboardUrl);
   }
 
   return NextResponse.next();

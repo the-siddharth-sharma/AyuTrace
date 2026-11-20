@@ -61,8 +61,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       if (typeof window !== "undefined") {
-        window.history.replaceState(null, "", "/login");
-        window.location.replace("/login");
+        window.location.href = "/login";
       } else {
         router.replace("/login");
       }
