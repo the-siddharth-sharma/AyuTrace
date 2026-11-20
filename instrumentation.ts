@@ -11,19 +11,16 @@ export async function register() {
       dns.setDefaultResultOrder?.("ipv4first");
     } catch {}
 
-    const dbUrl = process.env.DATABASE_URL?.trim();
-    if (dbUrl && !dbUrl.includes("localhost:5432")) {
-      try {
-        const { prisma } = await import("@/lib/db/prisma");
-        // Asynchronously initiate connection handshake during server cold boot
-        prisma.$queryRaw`SELECT 1`.catch(() => {});
+    try {
+      const { prisma } = await import("@/lib/db/prisma");
+      // Asynchronously initiate connection handshake during server cold boot
+      prisma.$queryRaw`SELECT 1`.catch(() => {});
 
-        // Pre-warm the user accounts cache so login lookups are instant (< 1ms)
-        const { prewarmUserCache } = await import("@/lib/auth/user-cache");
-        prewarmUserCache().catch(() => {});
-      } catch {
-        // Suppress connection warmup errors on offline builds
-      }
+      // Pre-warm the user accounts cache so login lookups are instant (< 1ms)
+      const { prewarmUserCache } = await import("@/lib/auth/user-cache");
+      prewarmUserCache().catch(() => {});
+    } catch {
+      // Suppress connection warmup errors on offline builds
     }
   }
 }
