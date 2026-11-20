@@ -1,6 +1,5 @@
 import crypto from "crypto";
 import { cookies } from "next/headers";
-import { after } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { AUTH_COOKIE_NAME } from "./constants";
 
@@ -94,32 +93,18 @@ export async function createSession(
     expires: expiresAt,
   });
 
-  // Persist session to PostgreSQL asynchronously after response dispatch
-  // This cuts cold-start login response time in half (from ~1.2s to < 400ms)!
-  try {
-    after(async () => {
-      try {
-        await prisma.session.create({
-          data: {
-            token,
-            userId,
-            expiresAt,
-          },
-        });
-      } catch (err) {
-        console.error("Async session persistence error:", err);
-      }
-    });
-  } catch {
-    // If called outside Next.js request context (e.g. tests or scripts), await directly
-    await prisma.session.create({
-      data: {
-        token,
-        userId,
-        expiresAt,
-      },
-    });
-  }
+  // Persist session to PostgreSQL synchronously to prevent a race condition:
+  // On Vercel serverless, the redirect to /dashboard hits a different function
+  // instance that has no in-memory cache. If we used after() to defer the DB
+  // write, that instance's getCurrentUser() would find no session row and
+  // return null — causing an infinite login/redirect loop.
+  await prisma.session.create({
+    data: {
+      token,
+      userId,
+      expiresAt,
+    },
+  });
 
   return token;
 }

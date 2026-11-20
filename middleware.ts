@@ -29,6 +29,7 @@ export function middleware(request: NextRequest) {
       pathname.startsWith("/api/auth/register") ||
       pathname.startsWith("/api/auth/forgot-password") ||
       pathname.startsWith("/api/auth/logout") ||
+      pathname === "/api/auth/me" ||
       (pathname === "/api/facilities" && request.method === "GET");
 
     if (!isPublicApi && !hasValidCookie) {
