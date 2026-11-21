@@ -301,24 +301,21 @@ export async function analyzeMedicinePackageWithGemma(
     };
   }
 
-  // Try live models available on Google AI Studio
-  const configuredModel = process.env.GEMMA_MODEL;
-  const candidateModels = [
-    ...(configuredModel && !configuredModel.includes("gemma-4-26b") ? [configuredModel] : []),
-    "gemini-flash-lite-latest",
-    "gemini-flash-latest",
-    "gemini-3.8-flash",
-    "gemini-3.5-flash",
-    "gemini-2.5-flash-lite",
-    "gemini-2.5-flash",
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-1.5-pro",
-  ];
+  // Try live models available on Google AI Studio with priority for Gemini 3.8 Flash
+  const configuredModel = process.env.GEMMA_MODEL?.trim();
+  const candidateModels = Array.from(
+    new Set([
+      ...(configuredModel && !configuredModel.includes("gemma-4-26b") ? [configuredModel] : []),
+      "gemini-3.8-flash",
+      "gemini-3.5-flash",
+      "gemini-3.1-flash-lite",
+      "gemini-flash-latest",
+    ])
+  );
 
   const genAI = new GoogleGenerativeAI(apiKey);
 
-  const systemPrompt = `You are AyuTrace's pharmaceutical packaging inspection specialist powered by Google Gemma 4.
+  const systemPrompt = `You are AyuTrace's pharmaceutical packaging inspection specialist powered by Google Gemini 3.8 Flash.
 Your sole role is to accurately transcribe physical text printed on real medicine packaging, blister packs, vials, ampoules, or syrup bottles.
 
 SAFETY & PHARMACEUTICAL CONSTRAINTS:
@@ -351,9 +348,15 @@ SAFETY & PHARMACEUTICAL CONSTRAINTS:
 
   for (const modelName of candidateModels) {
     try {
-      const model = genAI.getGenerativeModel({ model: modelName });
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+        generationConfig: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+        },
+      });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timed out after 8s")), 8000)
+        setTimeout(() => reject(new Error("Request timed out after 15s")), 15000)
       );
       const result = await Promise.race([
         model.generateContent([
