@@ -27,10 +27,6 @@ import { Input, Textarea, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScannedMedicineResult } from "@/lib/ai/gemma";
 import { parseMedicineExpiryDate } from "@/lib/inventory/dates";
-import {
-  SAMPLE_MEDICINE_PACKAGES,
-  SampleMedicinePackage,
-} from "@/lib/ai/sample-packages";
 import { revalidateAll } from "@/lib/hooks/use-swr-api";
 
 export function ScannerWorkspace() {
@@ -182,48 +178,6 @@ export function ScannerWorkspace() {
       };
       reader.readAsDataURL(file);
     }
-  };
-
-  // 1-Click Sample Ingestion
-  const handleSelectSample = (sample: SampleMedicinePackage) => {
-    setImageFile(new File(["sample"], `${sample.id}.svg`, { type: "image/svg+xml" }));
-    setImagePreview(sample.svgDataUri);
-    setScanError(null);
-    setSaveSuccess(false);
-
-    const parsedDate = parseMedicineExpiryDate(sample.expDate);
-    setFormData((prev) => ({
-      ...prev,
-      name: sample.name,
-      genericName: sample.genericName,
-      brand: sample.name.split(" ")[0],
-      manufacturer: sample.manufacturer,
-      strength: sample.strength,
-      dosageForm: sample.dosageForm,
-      category: sample.category,
-      batchNumber: sample.batchNumber,
-      manufacturingDateText: sample.mfgDate,
-      expiryDateText: sample.expDate,
-      normalizedExpiryDate: parsedDate.isoDate ? parsedDate.isoDate.split("T")[0] : "",
-      notes: "Sample packaging ingested for clinical verification.",
-    }));
-
-    setExtractedData({
-      medicineName: sample.name,
-      genericName: sample.genericName,
-      brand: sample.name.split(" ")[0],
-      strength: sample.strength,
-      dosageForm: sample.dosageForm,
-      manufacturer: sample.manufacturer,
-      batchNumber: sample.batchNumber,
-      manufacturingDateText: sample.mfgDate,
-      expiryDateText: sample.expDate,
-      packSize: sample.description,
-      storageInstructions: "Store below 25°C. Protect from moisture & light.",
-      scheduleType: sample.id === "paracip-500" ? "OTC" : "Schedule H",
-      uncertaintyWarnings: "Verified against standard pharmaceutical packaging specifications.",
-      rawConfidence: "high",
-    });
   };
 
   // Trigger server-side AI OCR extraction
@@ -438,7 +392,7 @@ export function ScannerWorkspace() {
       {/* MODE 1: AI Scanner */}
       {activeTab === "scan" && (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
-          {/* Left Column: Image Capture & Quick Samples */}
+          {/* Left Column: Image Capture */}
           <div className="lg:col-span-5 space-y-4">
             <Card className="border-slate-200/90 shadow-xs">
               <CardHeader className="pb-3 pt-4 px-4">
@@ -495,39 +449,6 @@ export function ScannerWorkspace() {
                         }}
                         className="hidden"
                       />
-                    </div>
-
-                    {/* 1-Click Test Samples */}
-                    <div className="pt-1">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                          <Sparkles className="h-3 w-3 text-teal-700" />
-                          1-Click Test Samples
-                        </span>
-                        <span className="text-[10px] text-slate-400">Click to autofill</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        {SAMPLE_MEDICINE_PACKAGES.map((sample) => (
-                          <button
-                            key={sample.id}
-                            type="button"
-                            onClick={() => handleSelectSample(sample)}
-                            className="flex items-center gap-2 text-left p-2 rounded-xl border border-slate-200/90 bg-white hover:border-teal-400 hover:bg-teal-50/50 transition-all cursor-pointer group shadow-2xs"
-                          >
-                            <div className="h-7 w-7 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
-                              <Pill className="h-3.5 w-3.5 text-teal-700" />
-                            </div>
-                            <div className="min-w-0 flex-1">
-                              <p className="text-xs font-bold text-slate-800 truncate group-hover:text-teal-950">
-                                {sample.name}
-                              </p>
-                              <p className="text-[10px] font-mono text-slate-500 truncate">
-                                EXP: {sample.expDate}
-                              </p>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   </div>
                 ) : (
