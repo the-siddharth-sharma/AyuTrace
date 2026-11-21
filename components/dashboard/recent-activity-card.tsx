@@ -85,17 +85,17 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <span className="h-2.5 w-2.5 rounded-full bg-[#10B981]" />
-            <CardTitle className="text-base sm:text-lg font-extrabold text-stone-900">
+            <span className="h-2 w-2 rounded-full bg-[#10B981]" />
+            <CardTitle className="text-sm font-bold text-stone-900">
               Recent movements
             </CardTitle>
           </div>
           <Link
             href="/inventory"
-            className="text-xs sm:text-sm font-bold text-[#00594C] hover:text-[#00473D] flex items-center gap-1 group"
+            className="text-[11px] font-semibold text-[#00594C] hover:text-[#00473D] flex items-center gap-0.5 group"
           >
             <span>View all</span>
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
       </CardHeader>
@@ -108,16 +108,16 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
           return (
             <div
               key={m.id}
-              className="flex items-center justify-between py-2 border-b border-[#EDE8DF] last:border-0"
+              className="flex items-center justify-between py-1.5 border-b border-[#EDE8DF] last:border-0"
             >
               <div className="min-w-0 pr-2">
-                <div className="flex items-center gap-2">
-                  <p className="text-sm sm:text-[15px] font-extrabold text-stone-900 truncate">
+                <div className="flex items-center gap-1.5">
+                  <p className="text-xs font-bold text-stone-900 truncate">
                     {m.performedBy || "Staff Clinician"}
                   </p>
                   <span
                     className={cn(
-                      "text-[10px] sm:text-[11px] font-bold px-1.5 py-0.5 rounded-md uppercase tracking-wider",
+                      "text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
                       isIntake
                         ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
                         : isDispense
@@ -128,7 +128,7 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
                     {m.movementType}
                   </span>
                 </div>
-                <p className="text-xs sm:text-[13px] font-semibold text-stone-600 truncate mt-0.5">
+                <p className="text-[11px] font-medium text-stone-600 truncate mt-0.5">
                   #{m.batch?.batchNumber} • {m.batch?.medicine?.name} • {formatTime(m.createdAt)}
                 </p>
               </div>
@@ -136,13 +136,13 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
               <div className="text-right shrink-0">
                 <span
                   className={cn(
-                    "text-sm sm:text-base font-extrabold",
+                    "text-xs font-bold",
                     isIntake ? "text-emerald-700" : isDispense ? "text-stone-900" : "text-amber-700"
                   )}
                 >
                   {isIntake ? `+${m.quantity}` : `-${m.quantity}`}
                 </span>
-                <span className="text-xs font-bold text-stone-500 block">units</span>
+                <span className="text-[10px] font-medium text-stone-600 block">units</span>
               </div>
             </div>
           );

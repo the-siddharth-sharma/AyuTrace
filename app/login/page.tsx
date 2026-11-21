@@ -85,10 +85,10 @@ export default function LoginPage() {
             </div>
           </div>
         </Link>
-        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
+        <h2 className="mt-4 text-2xl font-bold tracking-tight text-stone-900">
           Sign in to your clinical account
         </h2>
-        <p className="mt-1.5 text-sm sm:text-base font-semibold text-stone-600">
+        <p className="mt-1.5 text-sm font-medium text-stone-600">
           Statutory medicine inventory, lot traceability & FEFO dispatch controls
         </p>
       </div>
@@ -97,42 +97,42 @@ export default function LoginPage() {
         <Card className="border-[#EDE8DF] shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
           {/* Active Session Notice Banner */}
           {user && (
-            <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-teal-50/80 p-3.5 text-sm text-teal-950 animate-in fade-in">
+            <div className="mb-5 flex items-center justify-between gap-3 rounded-xl border border-teal-200 bg-teal-50/80 p-3 text-xs text-teal-950 animate-in fade-in">
               <div className="flex items-center gap-2 min-w-0">
-                <UserCheck className="h-4.5 w-4.5 text-teal-700 shrink-0" />
+                <UserCheck className="h-4 w-4 text-teal-700 shrink-0" />
                 <span className="truncate">
-                  Signed in as <strong className="font-bold">{user.name}</strong>
+                  Signed in as <strong className="font-semibold">{user.name}</strong>
                 </span>
               </div>
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-1 font-extrabold text-teal-800 hover:text-teal-900 underline underline-offset-2 shrink-0 text-sm"
+                className="inline-flex items-center gap-1 font-bold text-teal-800 hover:text-teal-900 underline underline-offset-2 shrink-0 text-xs"
               >
                 <span>Dashboard</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+                <ArrowRight className="h-3 w-3" />
               </Link>
             </div>
           )}
 
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-semibold text-rose-800 animate-in fade-in">
-              <AlertCircle className="h-4.5 w-4.5 shrink-0 text-rose-600 mt-0.5" />
-              <div className="flex-1 font-bold">{errorMessage}</div>
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm font-medium text-rose-800 animate-in fade-in">
+              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
+              <div className="flex-1 font-semibold">{errorMessage}</div>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-4.5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm sm:text-base font-bold text-stone-800 mb-1.5"
+                className="block text-sm font-semibold text-stone-800 mb-1.5"
               >
                 Work / Hospital Email
               </label>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-stone-500">
-                  <Mail className="h-4.5 w-4.5" />
+                  <Mail className="h-4 w-4" />
                 </div>
                 <Input
                   id="email"
@@ -143,7 +143,7 @@ export default function LoginPage() {
                   placeholder="name@hospital.org"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 text-base h-11 font-medium text-stone-900 rounded-xl"
+                  className="pl-9 text-sm h-10 font-medium text-stone-900 rounded-xl"
                 />
               </div>
             </div>
@@ -152,20 +152,20 @@ export default function LoginPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <label
                   htmlFor="password"
-                  className="block text-sm sm:text-base font-bold text-stone-800"
+                  className="block text-sm font-semibold text-stone-800"
                 >
                   Password
                 </label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs sm:text-sm text-[#00594C] hover:text-[#00473D] font-bold hover:underline"
+                  className="text-xs text-[#00594C] hover:text-[#00473D] font-semibold hover:underline"
                 >
                   Forgot Password?
                 </Link>
               </div>
               <div className="relative">
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-stone-500">
-                  <Lock className="h-4.5 w-4.5" />
+                  <Lock className="h-4 w-4" />
                 </div>
                 <Input
                   id="password"
@@ -176,7 +176,7 @@ export default function LoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 text-base h-11 font-medium text-stone-900 rounded-xl"
+                  className="pl-9 pr-9 text-sm h-10 font-medium text-stone-900 rounded-xl"
                 />
                 <button
                   type="button"
@@ -184,25 +184,25 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-0 flex items-center pr-3 text-stone-400 hover:text-stone-700 transition-colors"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4.5 w-4.5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-4.5 w-4.5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <label className="flex items-center gap-2 cursor-pointer text-sm sm:text-base font-semibold text-stone-700">
+              <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-stone-700">
                 <input
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
-                  className="h-4.5 w-4.5 rounded border-stone-300 text-[#00594C] focus:ring-[#00594C] cursor-pointer"
+                  className="h-4 w-4 rounded border-stone-300 text-[#00594C] focus:ring-[#00594C] cursor-pointer"
                 />
                 <span>Remember this workstation</span>
               </label>
-              <Badge variant="neutral" className="text-xs font-bold py-1 px-2.5">
+              <Badge variant="neutral" className="text-xs font-semibold py-0.5">
                 GAMP 5 Audited
               </Badge>
             </div>
@@ -210,28 +210,28 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-bold py-3 rounded-xl shadow-xs text-base"
+              className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-semibold py-2.5 rounded-xl shadow-xs text-sm"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2 text-base">
-                  <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="flex items-center gap-2 text-sm">
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span>Verifying credentials...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-2 text-base">
+                <div className="flex items-center justify-center gap-1.5 text-sm">
                   <span>Sign In to AyuTrace</span>
-                  <ArrowRight className="h-4.5 w-4.5" />
+                  <ArrowRight className="h-4 w-4" />
                 </div>
               )}
             </Button>
           </form>
 
           {/* Link to Make Account */}
-          <div className="mt-6 text-center text-sm sm:text-base font-semibold text-stone-700 border-t border-[#EDE8DF] pt-4">
+          <div className="mt-6 text-center text-sm font-medium text-stone-700 border-t border-[#EDE8DF] pt-4">
             Need access to AyuTrace?{" "}
             <Link
               href="/register"
-              className="font-extrabold text-[#00594C] hover:text-[#00473D] underline underline-offset-2"
+              className="font-bold text-[#00594C] hover:text-[#00473D] underline underline-offset-2"
             >
               Make an Account
             </Link>
@@ -239,8 +239,8 @@ export default function LoginPage() {
         </Card>
 
         {/* Clinical Compliance Footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs sm:text-sm font-semibold text-stone-500">
-          <ShieldCheck className="h-4.5 w-4.5 text-[#00594C]" />
+        <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs font-medium text-stone-500">
+          <ShieldCheck className="h-4 w-4 text-[#00594C]" />
           <span>Statutory Batch Expiry Verification Protocol • 21 CFR Part 11</span>
         </div>
       </div>

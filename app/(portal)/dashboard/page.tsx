@@ -50,26 +50,26 @@ export default function DashboardPage() {
       {/* 1. MedCounter Greeting Header & Action Buttons */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
+          <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
             {greeting}, {targetName}
           </h1>
-          <p className="text-sm sm:text-base font-semibold text-stone-600 mt-1">
+          <p className="text-xs font-medium text-stone-600 mt-0.5">
             {formattedDate} • clinical counter open • {stats?.trackingFacilities || 1} storage unit{(stats?.trackingFacilities || 1) > 1 ? "s" : ""} verified
           </p>
         </div>
 
         {/* Quick Action Buttons (MedCounter Style) */}
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Refresh button */}
           <button
             type="button"
             onClick={() => mutate()}
             disabled={isValidating}
-            className="flex h-10 w-10 items-center justify-center rounded-xl border border-[#EDE8DF] bg-white text-stone-700 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
+            className="flex h-9 w-9 items-center justify-center rounded-xl border border-[#EDE8DF] bg-white text-stone-700 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
             title="Refresh clinical metrics"
           >
             <RefreshCw
-              className={`h-4 w-4 ${isValidating ? "animate-spin text-[#00594C]" : ""}`}
+              className={`h-3.5 w-3.5 ${isValidating ? "animate-spin text-[#00594C]" : ""}`}
             />
           </button>
 
@@ -77,9 +77,9 @@ export default function DashboardPage() {
           <Link href="/inventory">
             <button
               type="button"
-              className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[#EDE8DF] bg-white text-sm font-bold text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-xl border border-[#EDE8DF] bg-white text-xs font-semibold text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
             >
-              <PackagePlus className="h-4 w-4 text-stone-600" />
+              <PackagePlus className="h-3.5 w-3.5 text-stone-600" />
               <span>Receive intake</span>
             </button>
           </Link>
@@ -88,9 +88,9 @@ export default function DashboardPage() {
           <Link href="/transfers">
             <button
               type="button"
-              className="flex items-center gap-2 h-10 px-4 rounded-xl border border-[#EDE8DF] bg-white text-sm font-bold text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 h-9 px-3.5 rounded-xl border border-[#EDE8DF] bg-white text-xs font-semibold text-stone-800 hover:bg-stone-50 transition-colors shadow-2xs cursor-pointer"
             >
-              <ArrowLeftRight className="h-4 w-4 text-stone-600" />
+              <ArrowLeftRight className="h-3.5 w-3.5 text-stone-600" />
               <span>Transfer stock</span>
             </button>
           </Link>
@@ -99,9 +99,9 @@ export default function DashboardPage() {
           <Link href="/scanner">
             <button
               type="button"
-              className="flex items-center gap-2 h-10 px-5 rounded-xl bg-[#00594C] hover:bg-[#00473D] text-sm sm:text-base font-bold text-white transition-all shadow-xs cursor-pointer active:scale-[0.98]"
+              className="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-[#00594C] hover:bg-[#00473D] text-xs font-semibold text-white transition-all shadow-xs cursor-pointer active:scale-[0.98]"
             >
-              <Plus className="h-4 w-4" />
+              <Plus className="h-3.5 w-3.5" />
               <span>+ Scan Medicine</span>
             </button>
           </Link>
@@ -110,16 +110,16 @@ export default function DashboardPage() {
 
       {/* Optional Alert Banner for Expired/Urgent Stock */}
       {hasUrgentAlerts && (
-        <div className="flex items-center justify-between rounded-2xl border border-rose-300 bg-rose-50/90 p-3.5 sm:px-4.5 text-sm text-rose-950 shadow-2xs">
-          <div className="flex items-center gap-3">
-            <ClockAlert className="h-4.5 w-4.5 text-rose-700 shrink-0" />
-            <span className="font-bold">
+        <div className="flex items-center justify-between rounded-2xl border border-rose-300 bg-rose-50/90 p-3 sm:px-4 text-xs text-rose-950 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <ClockAlert className="h-4 w-4 text-rose-700 shrink-0" />
+            <span className="font-semibold">
               Statutory Expiry Alert: {(stats?.expiredBatches || 0) + (stats?.urgentBatches || 0)} batch{(stats?.expiredBatches || 0) + (stats?.urgentBatches || 0) > 1 ? "es" : ""} requiring immediate rotation or quarantine.
             </span>
           </div>
           <Link
             href="/expiry"
-            className="text-sm font-extrabold text-rose-800 hover:underline shrink-0 ml-3"
+            className="text-xs font-bold text-rose-800 hover:underline shrink-0 ml-3"
           >
             Review in Radar →
           </Link>

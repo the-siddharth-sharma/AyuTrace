@@ -60,16 +60,6 @@ const config: Config = {
           "monospace",
         ],
       },
-      fontSize: {
-        xs: ["0.875rem", { lineHeight: "1.25rem" }], // 14px (scaled +2px from 12px)
-        sm: ["1rem", { lineHeight: "1.5rem" }], // 16px (scaled +2px from 14px)
-        base: ["1.125rem", { lineHeight: "1.75rem" }], // 18px (scaled +2px from 16px)
-        lg: ["1.25rem", { lineHeight: "1.875rem" }], // 20px (scaled +2px from 18px)
-        xl: ["1.375rem", { lineHeight: "2rem" }], // 22px (scaled +2px from 20px)
-        "2xl": ["1.625rem", { lineHeight: "2.25rem" }], // 26px (scaled +2px from 24px)
-        "3xl": ["2.125rem", { lineHeight: "2.5rem" }], // 34px (scaled +4px from 30px)
-        "4xl": ["2.5rem", { lineHeight: "2.75rem" }], // 40px (scaled +4px from 36px)
-      },
     },
   },
   plugins: [],

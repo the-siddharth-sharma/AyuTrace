@@ -74,27 +74,27 @@ export function DashboardTrendCard({
       <CardHeader className="pb-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <CardTitle className="text-base sm:text-lg font-extrabold text-stone-900">
+            <CardTitle className="text-sm font-bold text-stone-900">
               Stock & Expiry Trend
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm font-semibold text-stone-600 mt-1">
+            <CardDescription className="text-xs font-medium text-stone-600 mt-0.5">
               {totalUnits.toLocaleString()} units projected across upcoming rotation horizons
               {peakPoint ? ` • Peak: ${peakPoint.label} (${peakPoint.units} units)` : ""}
             </CardDescription>
           </div>
 
           {/* Time Filter Pills (MedCounter Style) */}
-          <div className="inline-flex rounded-xl bg-[#F6F4EE] border border-[#EDE8DF] p-0.5 self-start sm:self-auto">
+          <div className="inline-flex rounded-xl bg-[#F6F4EE] border border-[#EDE8DF] p-0.5 text-xs self-start sm:self-auto">
             {(["7D", "30D", "90D", "All"] as const).map((r) => (
               <button
                 key={r}
                 type="button"
                 onClick={() => setRangeFilter(r)}
                 className={cn(
-                  "rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold transition-all cursor-pointer",
+                  "rounded-lg px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer",
                   rangeFilter === r
                     ? "bg-white text-stone-900 shadow-2xs"
-                    : "text-stone-600 hover:text-stone-950"
+                    : "text-stone-600 hover:text-stone-900"
                 )}
               >
                 {r}
@@ -119,12 +119,12 @@ export function DashboardTrendCard({
                 dataKey="label"
                 tickLine={false}
                 axisLine={{ stroke: "#EDE8DF" }}
-                tick={{ fontSize: 12, fill: "#44403C", fontWeight: 600 }}
+                tick={{ fontSize: 11, fill: "#44403C", fontWeight: 600 }}
               />
               <YAxis
                 tickLine={false}
                 axisLine={false}
-                tick={{ fontSize: 11, fill: "#78716C", fontWeight: 500 }}
+                tick={{ fontSize: 10, fill: "#78716C", fontWeight: 500 }}
                 tickFormatter={(v) => `${v}`}
               />
               <Tooltip
@@ -132,13 +132,13 @@ export function DashboardTrendCard({
                   if (active && payload && payload.length) {
                     const data = payload[0].payload;
                     return (
-                      <div className="rounded-xl border border-[#EDE8DF] bg-white p-3.5 shadow-lg text-sm">
-                        <p className="font-extrabold text-stone-900">{data.fullMonth || data.label}</p>
-                        <p className="text-sm text-[#00594C] font-bold mt-1">
+                      <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-lg text-xs">
+                        <p className="font-bold text-stone-900">{data.fullMonth || data.label}</p>
+                        <p className="text-xs text-[#00594C] font-semibold mt-1">
                           {data.units} units scheduled
                         </p>
                         {data.batchCount ? (
-                          <p className="text-xs font-semibold text-stone-600 mt-0.5">
+                          <p className="text-[10px] text-stone-600 mt-0.5">
                             {data.batchCount} distinct batches
                           </p>
                         ) : null}
