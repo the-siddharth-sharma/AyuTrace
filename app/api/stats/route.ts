@@ -205,6 +205,31 @@ export async function GET(request: Request) {
       .map(([form, units]) => ({ form, units }))
       .sort((a, b) => b.units - a.units);
 
+    // Top medicines by volume / physical inventory
+    const medicineMap: Record<
+      string,
+      { id: string; name: string; strength: string | null; form: string | null; units: number; batchCount: number }
+    > = {};
+    for (const b of evaluatedBatches) {
+      const medId = b.medicine.id;
+      if (!medicineMap[medId]) {
+        medicineMap[medId] = {
+          id: medId,
+          name: b.medicine.name,
+          strength: b.medicine.strength,
+          form: b.medicine.dosageForm,
+          units: 0,
+          batchCount: 0,
+        };
+      }
+      medicineMap[medId].units += b.totalQuantity;
+      medicineMap[medId].batchCount += 1;
+    }
+
+    const topMedicines = Object.values(medicineMap)
+      .sort((a, b) => b.units - a.units)
+      .slice(0, 5);
+
     // Risk distribution chart data
     const riskDistribution = [
       { name: "Valid / Safe Shelf", count: validCount, color: "#0d9488" },
@@ -340,6 +365,7 @@ export async function GET(request: Request) {
         inventoryByFacility,
         quantityByCategory,
         quantityByDosageForm,
+        topMedicines,
         riskDistribution,
         expiryTimeline,
         monthlyTimeline,

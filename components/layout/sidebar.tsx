@@ -16,10 +16,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
-  Activity,
+  Search,
   LogOut,
-  LogIn,
-  User,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -29,73 +28,101 @@ interface SidebarProps {
   alertCount?: number;
 }
 
+interface NavItem {
+  name: string;
+  href: string;
+  icon: React.ComponentType<{ className?: string }>;
+  count?: number;
+  countColor?: string;
+  badge?: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
+
 export function Sidebar({ alertCount = 0 }: SidebarProps) {
   const pathname = usePathname();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const { user, logout } = useAuth();
 
-  const navigation = [
+  const navSections: NavSection[] = [
     {
-      name: "Overview",
-      href: "/dashboard",
-      icon: LayoutDashboard,
+      title: "OVERVIEW",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          name: "Alerts",
+          href: "/expiry",
+          icon: ClockAlert,
+          count: alertCount > 0 ? alertCount : undefined,
+          countColor: "bg-[#FEE2E2] text-[#B91C1C]",
+        },
+      ],
     },
     {
-      name: "AI Medicine Scanner",
-      href: "/scanner",
-      icon: ScanLine,
-      badge: "Gemma 4",
-      badgeColor: "bg-teal-100 text-teal-800",
+      title: "OPERATIONS",
+      items: [
+        {
+          name: "AI Scanner",
+          href: "/scanner",
+          icon: ScanLine,
+          badge: "Gemini",
+        },
+        {
+          name: "Inventory",
+          href: "/inventory",
+          icon: Pill,
+        },
+        {
+          name: "Transfers",
+          href: "/transfers",
+          icon: ArrowLeftRight,
+        },
+        {
+          name: "Facilities",
+          href: "/facilities",
+          icon: Building2,
+        },
+      ],
     },
     {
-      name: "Medicine Inventory",
-      href: "/inventory",
-      icon: Pill,
-    },
-    {
-      name: "Facilities & Departments",
-      href: "/facilities",
-      icon: Building2,
-    },
-    {
-      name: "Stock Transfers",
-      href: "/transfers",
-      icon: ArrowLeftRight,
-    },
-    {
-      name: "Expiry Monitor",
-      href: "/expiry",
-      icon: ClockAlert,
-      count: alertCount > 0 ? alertCount : undefined,
-      countColor: "bg-rose-100 text-rose-700 font-bold",
-    },
-    {
-      name: "Analytics",
-      href: "/analytics",
-      icon: BarChart3,
-    },
-    {
-      name: "Settings",
-      href: "/settings",
-      icon: Settings,
+      title: "INTELLIGENCE",
+      items: [
+        {
+          name: "Analytics",
+          href: "/analytics",
+          icon: BarChart3,
+        },
+        {
+          name: "Settings",
+          href: "/settings",
+          icon: Settings,
+        },
+      ],
     },
   ];
 
   return (
     <aside
       className={cn(
-        "relative flex flex-col border-r border-slate-200/80 bg-white transition-all duration-200 ease-in-out select-none",
-        isCollapsed ? "w-16" : "w-64"
+        "relative flex flex-col border-r border-[#EDE8DF] bg-white transition-all duration-200 ease-in-out select-none",
+        isCollapsed ? "w-16" : "w-60"
       )}
     >
-      {/* Brand Header with AyuTrace Minimalist Medicine / Cross Icon */}
-      <div className="flex h-16 items-center justify-between px-4 border-b border-slate-200/70">
+      {/* Brand Header */}
+      <div className="flex h-16 items-center justify-between px-4 border-b border-[#EDE8DF]/80">
         <Link
           href="/dashboard"
           className="flex items-center gap-2.5 overflow-hidden group"
         >
-          {/* AyuTrace Logo */}
-          <div className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl shadow-xs transition-transform group-hover:scale-105">
+          {/* Logo container */}
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#00594C] text-white shadow-xs group-hover:scale-105 transition-transform overflow-hidden">
             <Image
               src="/logo.png"
               alt="AyuTrace Logo"
@@ -107,161 +134,135 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
           </div>
 
           {!isCollapsed && (
-            <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-slate-900 leading-tight">
+            <div className="flex flex-col min-w-0">
+              <span className="text-sm font-bold tracking-tight text-stone-900 leading-tight truncate">
                 AyuTrace
               </span>
-              <span className="text-[10px] font-semibold tracking-wider uppercase text-teal-700">
-                Healthcare Logistics
+              <span className="text-[10px] font-medium text-stone-400 truncate">
+                {user?.facility?.name || "Clinical Pharmacy"}
               </span>
             </div>
           )}
         </Link>
       </div>
 
-      {/* Navigation Links */}
-      <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-        {navigation.map((item) => {
-          const isActive = pathname === item.href;
-          const Icon = item.icon;
-
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                "group flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-teal-50 text-teal-800 font-semibold"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              )}
-              title={isCollapsed ? item.name : undefined}
-            >
-              <Icon
-                className={cn(
-                  "h-4.5 w-4.5 shrink-0 transition-colors",
-                  isActive
-                    ? "text-teal-700"
-                    : "text-slate-400 group-hover:text-slate-600"
-                )}
-              />
-              {!isCollapsed && (
-                <div className="flex flex-1 items-center justify-between overflow-hidden">
-                  <span className="truncate text-xs">{item.name}</span>
-                  {item.count !== undefined && (
-                    <span
-                      className={cn(
-                        "ml-auto rounded-full px-2 py-0.5 text-[10px] font-bold",
-                        item.countColor
-                      )}
-                    >
-                      {item.count}
-                    </span>
-                  )}
-                  {item.badge && (
-                    <span
-                      className={cn(
-                        "ml-auto flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-bold tracking-wide uppercase",
-                        item.badgeColor
-                      )}
-                    >
-                      <Activity className="h-2.5 w-2.5" />
-                      {item.badge}
-                    </span>
-                  )}
-                </div>
-              )}
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* User Status / Account Footer */}
-      <div className="p-3 border-t border-slate-200/70 bg-slate-50/60">
-        {!isCollapsed ? (
-          user ? (
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-2xs mb-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 overflow-hidden">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-teal-700 text-[10px] font-bold text-white uppercase">
-                    {user.name.slice(0, 2)}
-                  </div>
-                  <div className="overflow-hidden">
-                    <p className="text-xs font-semibold text-slate-800 truncate leading-tight">
-                      {user.name}
-                    </p>
-                    <p className="text-[10px] text-teal-700 font-medium truncate leading-tight mt-0.5">
-                      {RoleLabels[user.role] || user.role}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => logout()}
-                  className="rounded p-1 text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                  title="Sign Out"
-                >
-                  <LogOut className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-2xs mb-2">
-              <p className="text-[11px] font-semibold text-slate-700">Clinical Workstation</p>
-              <div className="mt-2 flex gap-1.5">
-                <Link
-                  href="/login"
-                  className="flex-1 flex items-center justify-center gap-1 text-[11px] font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 rounded py-1 transition-colors"
-                >
-                  <LogIn className="h-3 w-3" />
-                  <span>Sign In</span>
-                </Link>
-                <Link
-                  href="/register"
-                  className="flex-1 flex items-center justify-center gap-1 text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded py-1 transition-colors"
-                >
-                  <span>Sign Up</span>
-                </Link>
-              </div>
-            </div>
-          )
-        ) : user ? (
-          <div className="flex justify-center mb-2" title={`Signed in as ${user.name}`}>
-            <div className="flex h-7 w-7 items-center justify-center rounded-full bg-teal-700 text-[10px] font-bold text-white uppercase">
-              {user.name.slice(0, 2)}
-            </div>
-          </div>
-        ) : null}
-
-        {/* Microcopy & Protocol Footer */}
+      {/* Main Nav with Sections */}
+      <div className="flex-1 p-3 overflow-y-auto space-y-4">
+        {/* Search Input (MedCounter Style) */}
         {!isCollapsed && (
-          <div className="rounded-lg border border-slate-200 bg-white p-2.5 shadow-2xs">
-            <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-800">
-              <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
-              <span>AyuTrace Protocol</span>
-            </div>
-            <p className="mt-1 text-[11px] text-slate-500 italic leading-snug">
-              &ldquo;Trace every batch. Protect every step.&rdquo;
-            </p>
-            <div className="mt-2 flex items-center justify-between text-[10px] text-slate-400 border-t border-slate-100 pt-1.5 font-mono">
-              <span>Gemma 4 Vision</span>
-              <span className="text-teal-700 font-semibold">Active</span>
-            </div>
+          <div className="relative">
+            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-stone-400" />
+            <input
+              type="text"
+              placeholder="Search..."
+              readOnly
+              onClick={() => {
+                const searchInput = document.getElementById("global-search");
+                if (searchInput) searchInput.focus();
+              }}
+              className="w-full pl-8 pr-8 py-1.5 bg-[#F6F4EE] text-xs text-stone-700 placeholder-stone-400 rounded-xl border border-[#EDE8DF] outline-none cursor-pointer hover:bg-[#F2EFE7] transition-colors"
+            />
+            <span className="absolute right-2.5 top-2 text-[10px] text-stone-400 font-mono">⌘K</span>
           </div>
         )}
+
+        {/* Section Groups */}
+        {navSections.map((section) => (
+          <div key={section.title} className="space-y-1">
+            {!isCollapsed && (
+              <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+                {section.title}
+              </p>
+            )}
+            <div className="space-y-0.5">
+              {section.items.map((item) => {
+                const isActive = pathname === item.href;
+                const Icon = item.icon;
+
+                return (
+                  <Link
+                    key={item.name}
+                    href={item.href}
+                    className={cn(
+                      "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium transition-all",
+                      isActive
+                        ? "bg-[#EAF5F2] text-[#00594C] font-semibold"
+                        : "text-stone-600 hover:bg-[#F6F4EE] hover:text-stone-900"
+                    )}
+                    title={isCollapsed ? item.name : undefined}
+                  >
+                    <Icon
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-colors",
+                        isActive
+                          ? "text-[#00594C]"
+                          : "text-stone-400 group-hover:text-stone-600"
+                      )}
+                    />
+                    {!isCollapsed && (
+                      <div className="flex flex-1 items-center justify-between overflow-hidden">
+                        <span className="truncate">{item.name}</span>
+                        {item.count !== undefined && (
+                          <span
+                            className={cn(
+                              "ml-auto rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                              item.countColor || "bg-[#FEE2E2] text-[#B91C1C]"
+                            )}
+                          >
+                            {item.count}
+                          </span>
+                        )}
+                        {item.badge && (
+                          <span className="ml-auto rounded-md bg-[#EAF5F2] text-[#00594C] px-1.5 py-0.5 text-[9px] font-bold tracking-wide">
+                            {item.badge}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={() => setIsCollapsed(!isCollapsed)}
-        className="absolute -right-3 top-20 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-xs hover:bg-slate-50 hover:text-slate-800 transition-colors"
-        aria-label={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-      >
-        {isCollapsed ? (
-          <ChevronRight className="h-3.5 w-3.5" />
+      {/* Footer Controls: Collapse & Sign Out */}
+      <div className="p-3 border-t border-[#EDE8DF] space-y-1 bg-[#FAF8F5]/60">
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-medium text-stone-500 hover:bg-[#F4F1EA] hover:text-stone-800 transition-colors cursor-pointer"
+          title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {isCollapsed ? (
+            <ChevronRight className="h-4 w-4 shrink-0 text-stone-400" />
+          ) : (
+            <>
+              <ChevronLeft className="h-4 w-4 shrink-0 text-stone-400" />
+              <span>« Collapse</span>
+            </>
+          )}
+        </button>
+
+        {user ? (
+          <button
+            onClick={() => logout()}
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-medium text-stone-500 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+            title="Sign out"
+          >
+            <LogOut className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>Sign out</span>}
+          </button>
         ) : (
-          <ChevronLeft className="h-3.5 w-3.5" />
+          <Link
+            href="/login"
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#00594C] hover:bg-[#EAF5F2] transition-colors"
+          >
+            <ShieldCheck className="h-4 w-4 shrink-0" />
+            {!isCollapsed && <span>Sign In</span>}
+          </Link>
         )}
-      </button>
+      </div>
     </aside>
   );
 }

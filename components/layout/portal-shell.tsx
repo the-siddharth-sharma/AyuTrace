@@ -60,7 +60,7 @@ export function PortalShell({ children, user: initialUser }: PortalShellProps) {
   const orgName = settings?.orgName || "AyuTrace Health Network";
 
   return (
-    <div className="flex min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased">
+    <div className="flex min-h-screen bg-[#F8F7F4] font-sans text-stone-900 antialiased">
       <Sidebar alertCount={alertCount} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <Navbar
@@ -69,8 +69,8 @@ export function PortalShell({ children, user: initialUser }: PortalShellProps) {
           selectedFacilityId={selectedFacilityId}
           onFacilityChange={setSelectedFacilityId}
         />
-        <main className="flex-1 overflow-y-auto p-6 md:p-8">
-          <div className="mx-auto max-w-7xl">{children}</div>
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-7">
+          <div className="mx-auto max-w-[1400px]">{children}</div>
         </main>
       </div>
     </div>

@@ -127,7 +127,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-radial from-slate-50 via-teal-50/20 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col justify-center bg-[#F8F7F4] py-12 px-4 sm:px-6 lg:px-8">
       {/* Brand Header */}
       <div className="sm:mx-auto sm:w-full sm:max-w-xl text-center">
         <Link

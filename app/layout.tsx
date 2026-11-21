@@ -43,7 +43,7 @@ export default function RootLayout({
       className={`${plusJakartaSans.variable} ${jetbrainsMono.variable}`}
     >
       <body
-        className={`${plusJakartaSans.className} min-h-screen bg-slate-50/70 font-sans text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900`}
+        className={`${plusJakartaSans.className} min-h-screen bg-[#F8F7F4] font-sans text-stone-900 antialiased selection:bg-[#EAF5F2] selection:text-[#00594C]`}
       >
         <SWRProvider>
           <AuthProvider>{children}</AuthProvider>

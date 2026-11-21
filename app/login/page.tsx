@@ -59,7 +59,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col justify-center bg-radial from-slate-50 via-teal-50/20 to-slate-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="flex min-h-screen flex-col justify-center bg-[#F8F7F4] py-12 px-4 sm:px-6 lg:px-8">
       {/* AyuTrace Header Brand */}
       <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
         <Link
@@ -210,7 +210,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
+              className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-semibold py-2.5 rounded-xl shadow-xs text-sm"
             >
               {isLoading ? (
                 <div className="flex items-center gap-2 text-sm">
