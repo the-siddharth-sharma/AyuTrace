@@ -135,9 +135,9 @@ export async function POST(request: Request) {
       status = "quarantined"; // Unverified missing dates are quarantined from dispensing
     }
 
-    const result = await prisma.$transaction(async (tx) => {
+    const executeIntake = async (client: any) => {
       // Find or create Medicine master record
-      let medicine = await tx.medicine.findFirst({
+      let medicine = await client.medicine.findFirst({
         where: {
           name: { equals: validated.name.trim() },
           dosageForm: { equals: validated.dosageForm },
@@ -146,7 +146,7 @@ export async function POST(request: Request) {
       });
 
       if (!medicine) {
-        medicine = await tx.medicine.create({
+        medicine = await client.medicine.create({
           data: {
             name: validated.name.trim(),
             genericName: validated.genericName?.trim() || null,
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
       }
 
       // Create MedicineBatch record
-      const batch = await tx.medicineBatch.create({
+      const batch = await client.medicineBatch.create({
         data: {
           medicineId: medicine.id,
           batchNumber: validated.batchNumber.trim(),
@@ -185,7 +185,7 @@ export async function POST(request: Request) {
       });
 
       // Upsert StockBalance for this location
-      await tx.stockBalance.upsert({
+      await client.stockBalance.upsert({
         where: {
           batchId_locationId: {
             batchId: batch.id,
@@ -203,7 +203,7 @@ export async function POST(request: Request) {
       });
 
       // Log StockMovement audit trail
-      await tx.stockMovement.create({
+      await client.stockMovement.create({
         data: {
           batchId: batch.id,
           destinationLocationId: validated.locationId,
@@ -216,7 +216,18 @@ export async function POST(request: Request) {
       });
 
       return batch;
-    });
+    };
+
+    let result;
+    try {
+      result = await prisma.$transaction(async (tx) => executeIntake(tx), { timeout: 15000 });
+    } catch (txError: any) {
+      if (txError?.code === "P2028" || txError?.message?.includes("Transaction")) {
+        result = await executeIntake(prisma);
+      } else {
+        throw txError;
+      }
+    }
 
     invalidateCache();
 

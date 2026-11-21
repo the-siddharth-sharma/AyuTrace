@@ -133,9 +133,10 @@ export async function GET(request: Request) {
         },
       });
 
-    const nearDays = settings?.nearExpiryThresholdDays ?? 90;
+    const nearDays = settings?.nearExpiryThresholdDays ?? 180;
     const criticalDays = settings?.criticalExpiryThresholdDays ?? 30;
     const urgentDays = settings?.urgentExpiryThresholdDays ?? 7;
+    const validYearDays = 365;
 
     let totalStockUnits = 0;
     let expiredCount = 0;
@@ -144,6 +145,17 @@ export async function GET(request: Request) {
     let nearExpiryCount = 0;
     let validCount = 0;
     let unverifiedCount = 0;
+
+    let validYearBatches = 0;
+    let validYearUnits = 0;
+    let safeShelfBatches = 0;
+    let safeShelfUnits = 0;
+    let nearExpiry6mBatches = 0;
+    let nearExpiry6mUnits = 0;
+    let critical1mBatches = 0;
+    let critical1mUnits = 0;
+    let expiredStockBatches = 0;
+    let expiredStockUnits = 0;
 
     const evaluatedBatches = batches.map((batch) => {
       const batchTotalQty = batch.balances.reduce((acc, b) => acc + b.quantity, 0);
@@ -154,7 +166,8 @@ export async function GET(request: Request) {
         batch.verifiedByStaff,
         nearDays,
         criticalDays,
-        urgentDays
+        urgentDays,
+        validYearDays
       );
 
       if (evaluation.status === "expired") expiredCount++;
@@ -163,6 +176,24 @@ export async function GET(request: Request) {
       else if (evaluation.status === "near_expiry") nearExpiryCount++;
       else if (evaluation.status === "valid") validCount++;
       else unverifiedCount++;
+
+      // Stock Expiry Monitor breakdown
+      if (evaluation.categoryTier === "valid_year") {
+        validYearBatches++;
+        validYearUnits += batchTotalQty;
+      } else if (evaluation.categoryTier === "safe_shelf") {
+        safeShelfBatches++;
+        safeShelfUnits += batchTotalQty;
+      } else if (evaluation.categoryTier === "near_expiry_6m") {
+        nearExpiry6mBatches++;
+        nearExpiry6mUnits += batchTotalQty;
+      } else if (evaluation.categoryTier === "critical_1m") {
+        critical1mBatches++;
+        critical1mUnits += batchTotalQty;
+      } else if (evaluation.categoryTier === "expired") {
+        expiredStockBatches++;
+        expiredStockUnits += batchTotalQty;
+      }
 
       return {
         ...batch,
@@ -230,12 +261,88 @@ export async function GET(request: Request) {
       .sort((a, b) => b.units - a.units)
       .slice(0, 5);
 
+    // Stock Expiry Monitor breakdown (Dark Green: ≥1yr, Yellow: ≤6mo, Red: ≤1mo)
+    const totalExpiryUnits =
+      validYearUnits + safeShelfUnits + nearExpiry6mUnits + critical1mUnits + expiredStockUnits;
+    const stockExpiryMonitor = {
+      totalBatches: batches.length,
+      totalUnits: totalStockUnits,
+      validYear: {
+        batches: validYearBatches,
+        units: validYearUnits,
+        color: "#00594C",
+        label: "Valid (≥1 yr)",
+        percentage: totalExpiryUnits > 0 ? Math.round((validYearUnits / totalExpiryUnits) * 100) : 0,
+      },
+      safeShelf: {
+        batches: safeShelfBatches,
+        units: safeShelfUnits,
+        color: "#2DD4BF",
+        label: "Safe (6–12m)",
+        percentage: totalExpiryUnits > 0 ? Math.round((safeShelfUnits / totalExpiryUnits) * 100) : 0,
+      },
+      nearExpiry: {
+        batches: nearExpiry6mBatches,
+        units: nearExpiry6mUnits,
+        color: "#EAB308",
+        label: "Near exp (≤6m)",
+        percentage: totalExpiryUnits > 0 ? Math.round((nearExpiry6mUnits / totalExpiryUnits) * 100) : 0,
+      },
+      critical: {
+        batches: critical1mBatches + expiredStockBatches,
+        units: critical1mUnits + expiredStockUnits,
+        color: "#DC2626",
+        label: "1 mo left",
+        percentage:
+          totalExpiryUnits > 0
+            ? Math.round(((critical1mUnits + expiredStockUnits) / totalExpiryUnits) * 100)
+            : 0,
+      },
+      breakdown: [
+        {
+          name: "Valid (≥1 yr)",
+          batches: validYearBatches,
+          value: validYearUnits,
+          color: "#00594C",
+          percentage: totalExpiryUnits > 0 ? Math.round((validYearUnits / totalExpiryUnits) * 100) : 0,
+        },
+        ...(safeShelfUnits > 0 || safeShelfBatches > 0
+          ? [
+              {
+                name: "Safe (6–12m)",
+                batches: safeShelfBatches,
+                value: safeShelfUnits,
+                color: "#2DD4BF",
+                percentage: totalExpiryUnits > 0 ? Math.round((safeShelfUnits / totalExpiryUnits) * 100) : 0,
+              },
+            ]
+          : []),
+        {
+          name: "Near exp (≤6m)",
+          batches: nearExpiry6mBatches,
+          value: nearExpiry6mUnits,
+          color: "#EAB308",
+          percentage: totalExpiryUnits > 0 ? Math.round((nearExpiry6mUnits / totalExpiryUnits) * 100) : 0,
+        },
+        {
+          name: "1 mo left",
+          batches: critical1mBatches + expiredStockBatches,
+          value: critical1mUnits + expiredStockUnits,
+          color: "#DC2626",
+          percentage:
+            totalExpiryUnits > 0
+              ? Math.round(((critical1mUnits + expiredStockUnits) / totalExpiryUnits) * 100)
+              : 0,
+        },
+      ],
+    };
+
     // Risk distribution chart data
     const riskDistribution = [
-      { name: "Valid / Safe Shelf", count: validCount, color: "#0d9488" },
-      { name: "Near Expiry (≤90d)", count: nearExpiryCount, color: "#f59e0b" },
-      { name: "Critical (≤30d)", count: criticalCount, color: "#ea580c" },
-      { name: "Urgent (≤7d)", count: urgentCount, color: "#dc2626" },
+      { name: "Valid (≥1 yr)", count: validYearBatches, color: "#00594C" },
+      { name: "Safe Shelf (6–12m)", count: safeShelfBatches, color: "#2dd4bf" },
+      { name: "Near Expiry (≤6mo)", count: nearExpiry6mBatches, color: "#eab308" },
+      { name: "Critical (≤1mo)", count: critical1mBatches, color: "#dc2626" },
       { name: "Expired (Blocked)", count: expiredCount, color: "#991b1b" },
       { name: "Unverified / Missing", count: unverifiedCount, color: "#64748b" },
     ].filter((item) => item.count > 0 || batches.length === 0);
@@ -365,6 +472,7 @@ export async function GET(request: Request) {
         inventoryByFacility,
         quantityByCategory,
         quantityByDosageForm,
+        stockExpiryMonitor,
         topMedicines,
         riskDistribution,
         expiryTimeline,

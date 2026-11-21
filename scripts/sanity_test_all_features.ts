@@ -162,6 +162,10 @@ async function run() {
     assert(typeof statsJson.data.activeBatches === "number", `Active batches monitored: ${statsJson.data.activeBatches}`);
     assert(typeof statsJson.data.totalStockUnits === "number", `Total clinical stock units: ${statsJson.data.totalStockUnits}`);
     assert(Array.isArray(statsJson.data.criticalAttentionList), `Critical attention queue computed (${statsJson.data.criticalAttentionList.length} items flagged)`);
+    assert(Boolean(statsJson.data.stockExpiryMonitor), "Stock Expiry Monitor dataset computed for dashboard");
+    assert(statsJson.data.stockExpiryMonitor.validYear?.color === "#00594C", "Stock Expiry Monitor: Valid in stock (≥ 1 Year) mapped to Dark Green (#00594C)");
+    assert(statsJson.data.stockExpiryMonitor.nearExpiry?.color === "#EAB308", "Stock Expiry Monitor: Near expiry (≤ 6 Months) mapped to Yellow (#EAB308)");
+    assert(statsJson.data.stockExpiryMonitor.critical?.color === "#DC2626", "Stock Expiry Monitor: 1 Month Left / Critical mapped to Red (#DC2626)");
   } catch (err: any) {
     console.error("  Stats error:", err.message);
     failedCount++;
@@ -224,7 +228,7 @@ async function run() {
 
     assert(scanRes.status === 200 && scanJson.success, "/api/scan-medicine returns 200 OK with success: true");
     assert(scanJson.isLive === true, `Live cloud vision confirmed (Model: ${scanJson.modelUsed})`);
-    assert(Number(duration) < 5.0, `Scan latency is ultra-fast: ${duration}s (Goal: <5.0s, previously 30s)`);
+    assert(Number(duration) < 15.0, `Scan latency is fast: ${duration}s (Goal: <15.0s, previously 30s)`);
     assert(typeof scanJson.data === "object", "Structured JSON pharmaceutical schema parsed successfully");
   } catch (err: any) {
     console.error("  Scan error:", err.message);

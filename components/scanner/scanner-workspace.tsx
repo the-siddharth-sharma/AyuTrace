@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Upload,
@@ -26,7 +26,7 @@ import { Button } from "@/components/ui/button";
 import { Input, Textarea, Select } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ScannedMedicineResult } from "@/lib/ai/gemma";
-import { parseMedicineExpiryDate } from "@/lib/inventory/dates";
+import { parseMedicineExpiryDate, evaluateMedicineExpiry, getExpiryCategoryBadge } from "@/lib/inventory/dates";
 import { revalidateAll } from "@/lib/hooks/use-swr-api";
 
 export function ScannerWorkspace() {
@@ -92,6 +92,24 @@ export function ScannerWorkspace() {
       })
       .catch((err) => console.error("Error loading facilities:", err));
   }, []);
+
+  // Live stock expiry categorization badge based on statutory timeline requirements:
+  // - Dark Green (#00594C): Valid In Stock (≥ 1 Year)
+  // - Mint (#2DD4BF): Safe Shelf (6–12 Months)
+  // - Yellow (#EAB308): Near Expiry (≤ 6 Months)
+  // - Red (#DC2626): 1 Month Left / Critical
+  const currentExpiryBadge = useMemo(() => {
+    let dateToEval: string | null = null;
+    if (formData.normalizedExpiryDate) {
+      dateToEval = formData.normalizedExpiryDate;
+    } else if (formData.expiryDateText) {
+      const parsed = parseMedicineExpiryDate(formData.expiryDateText);
+      if (parsed.isoDate) dateToEval = parsed.isoDate;
+    }
+    if (!dateToEval) return null;
+    const evaluation = evaluateMedicineExpiry(dateToEval, true);
+    return getExpiryCategoryBadge(evaluation.daysRemaining, true);
+  }, [formData.normalizedExpiryDate, formData.expiryDateText]);
 
   // Update locations when facility changes
   const handleFacilityChange = (facId: string) => {
@@ -274,6 +292,11 @@ export function ScannerWorkspace() {
           quantity: Number(formData.quantity) || 1,
           verifiedByStaff: true,
           scanConfidence: extractedData?.rawConfidence || "manual",
+          notes: formData.notes?.trim()
+            ? formData.notes
+            : currentExpiryBadge
+            ? `Intake Shelf-Life: ${currentExpiryBadge.label}`
+            : "Verified from package scan for clinical intake.",
         }),
       });
 
@@ -632,6 +655,38 @@ export function ScannerWorkspace() {
                         <p className="mt-0.5 text-[10px] text-teal-700 font-semibold">Earliest expiry dispatch</p>
                       </div>
                     </div>
+
+                    {/* Live Shelf-Life & Expiry Categorization */}
+                    {currentExpiryBadge && (
+                      <div className={`mt-2.5 p-2 rounded-xl border flex items-center justify-between text-xs transition-all ${currentExpiryBadge.bgClass}`}>
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full shrink-0"
+                            style={{ backgroundColor: currentExpiryBadge.color }}
+                          />
+                          <div>
+                            <span className="font-bold">{currentExpiryBadge.label}</span>
+                            <span className="text-[11px] opacity-80 ml-1.5 hidden sm:inline">
+                              • {currentExpiryBadge.sublabel}
+                            </span>
+                          </div>
+                        </div>
+                        <span
+                          className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md text-white shadow-2xs"
+                          style={{ backgroundColor: currentExpiryBadge.color }}
+                        >
+                          {currentExpiryBadge.tier === "valid_year"
+                            ? "≥ 1 YR VALID"
+                            : currentExpiryBadge.tier === "near_expiry_6m"
+                            ? "≤ 6 MO NEAR EXPIRY"
+                            : currentExpiryBadge.tier === "critical_1m"
+                            ? "≤ 1 MO CRITICAL"
+                            : currentExpiryBadge.tier === "safe_shelf"
+                            ? "6-12 MO SAFE"
+                            : "EXPIRED"}
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Stock Quantity & Pack Size */}
@@ -830,6 +885,38 @@ export function ScannerWorkspace() {
                     />
                   </div>
                 </div>
+
+                {/* Live Shelf-Life & Expiry Categorization */}
+                {currentExpiryBadge && (
+                  <div className={`mt-2.5 p-2 rounded-xl border flex items-center justify-between text-xs transition-all ${currentExpiryBadge.bgClass}`}>
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="h-2.5 w-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: currentExpiryBadge.color }}
+                      />
+                      <div>
+                        <span className="font-bold">{currentExpiryBadge.label}</span>
+                        <span className="text-[11px] opacity-80 ml-1.5 hidden sm:inline">
+                          • {currentExpiryBadge.sublabel}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md text-white shadow-2xs"
+                      style={{ backgroundColor: currentExpiryBadge.color }}
+                    >
+                      {currentExpiryBadge.tier === "valid_year"
+                        ? "≥ 1 YR VALID"
+                        : currentExpiryBadge.tier === "near_expiry_6m"
+                        ? "≤ 6 MO NEAR EXPIRY"
+                        : currentExpiryBadge.tier === "critical_1m"
+                        ? "≤ 1 MO CRITICAL"
+                        : currentExpiryBadge.tier === "safe_shelf"
+                        ? "6-12 MO SAFE"
+                        : "EXPIRED"}
+                    </span>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

@@ -16,7 +16,7 @@ import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { DashboardTrendCard } from "@/components/dashboard/dashboard-trend-card";
 import { DashboardRadarCard } from "@/components/dashboard/dashboard-radar-card";
 import { TopMedicinesCard } from "@/components/dashboard/top-medicines-card";
-import { FormulationMixCard } from "@/components/dashboard/formulation-mix-card";
+import { StockExpiryMonitorCard } from "@/components/dashboard/stock-expiry-monitor-card";
 import { RecentActivityCard } from "@/components/dashboard/recent-activity-card";
 import { useStats } from "@/lib/hooks/use-swr-api";
 import { useAuth } from "@/lib/auth/auth-context";
@@ -161,8 +161,8 @@ export default function DashboardPage() {
           <TopMedicinesCard medicines={(stats as any)?.topMedicines || []} />
         </div>
         <div className="md:col-span-6 lg:col-span-3">
-          <FormulationMixCard
-            categories={stats?.quantityByDosageForm || []}
+          <StockExpiryMonitorCard
+            data={(stats as any)?.stockExpiryMonitor}
             totalBatches={stats?.activeBatches || 0}
             totalUnits={stats?.totalStockUnits || 0}
           />

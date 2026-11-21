@@ -7,23 +7,27 @@ export interface MedicineExpiryEvaluation {
   badgeVariant: "destructive" | "warning" | "alert" | "success" | "neutral";
   isDispensingBlocked: boolean;
   policyNotes: string;
+  categoryTier: "valid_year" | "safe_shelf" | "near_expiry_6m" | "critical_1m" | "expired" | "unverified";
+  categoryLabel: string;
+  categoryColor: string;
 }
 
 /**
  * Deterministically evaluate medicine batch expiry risk based on calendar days.
- * Under pharmaceutical safety standards and statutory labelling rules (such as Drugs & Cosmetics Rules):
- * - Expired batches (past cutoff) MUST be quarantined and blocked from dispensing.
- * - Urgent batches (≤ 7 days) require immediate return to stockroom or emergency rotation.
- * - Critical batches (≤ 30 days) are flagged for fast-tracked dispensing before expiry.
- * - Near-expiry batches (≤ 60-90 days) are highlighted in inventory audits.
- * - Batches with unverified or missing dates are blocked from active dispensing until verified.
+ * Updated Statutory & Clinical Thresholds:
+ * - Valid in stock (≥ 1 Year): Dark green (#00594C), full statutory shelf-life (≥365 days).
+ * - Safe shelf (6–12 Months): Safe inventory standing (180–364 days).
+ * - Near expiry (≤ 6 Months): Yellow (#EAB308), priority rotation window (31–180 days).
+ * - Critical / Urgent (≤ 1 Month): Red (#DC2626), expedited dispatch cutoff (≤30 days).
+ * - Expired: Past cutoff (<0 days), blocked from dispensing and quarantined.
  */
 export function evaluateMedicineExpiry(
   date: Date | string | null | undefined,
   verifiedByStaff: boolean = true,
-  nearDays: number = 90,
+  nearDays: number = 180,
   criticalDays: number = 30,
-  urgentDays: number = 7
+  urgentDays: number = 7,
+  validYearDays: number = 365
 ): MedicineExpiryEvaluation {
   if (!verifiedByStaff) {
     return {
@@ -33,6 +37,9 @@ export function evaluateMedicineExpiry(
       badgeVariant: "neutral",
       isDispensingBlocked: true,
       policyNotes: "Medicine batch requires staff pharmacist verification before clinical release.",
+      categoryTier: "unverified",
+      categoryLabel: "Pending Verification",
+      categoryColor: "#64748B",
     };
   }
 
@@ -44,6 +51,9 @@ export function evaluateMedicineExpiry(
       badgeVariant: "destructive",
       isDispensingBlocked: true,
       policyNotes: "Unrecorded expiry date. Ineligible for dispensing until verified from packaging label.",
+      categoryTier: "unverified",
+      categoryLabel: "Expiry Missing",
+      categoryColor: "#DC2626",
     };
   }
 
@@ -56,6 +66,9 @@ export function evaluateMedicineExpiry(
       badgeVariant: "destructive",
       isDispensingBlocked: true,
       policyNotes: "Unparseable expiry date string. Audit required.",
+      categoryTier: "unverified",
+      categoryLabel: "Invalid Format",
+      categoryColor: "#DC2626",
     };
   }
 
@@ -71,6 +84,9 @@ export function evaluateMedicineExpiry(
       badgeVariant: "destructive",
       isDispensingBlocked: true,
       policyNotes: "Past printed expiration cutoff. Must be quarantined for safe destruction or supplier return.",
+      categoryTier: "expired",
+      categoryLabel: "Expired",
+      categoryColor: "#DC2626",
     };
   }
 
@@ -82,6 +98,9 @@ export function evaluateMedicineExpiry(
       badgeVariant: "destructive",
       isDispensingBlocked: true,
       policyNotes: "Within urgent cutoff (≤7 days). Do not dispense for courses exceeding remaining duration.",
+      categoryTier: "critical_1m",
+      categoryLabel: "Urgent (≤7d)",
+      categoryColor: "#DC2626",
     };
   }
 
@@ -92,7 +111,10 @@ export function evaluateMedicineExpiry(
       label: `Critical (${daysRemaining}d left)`,
       badgeVariant: "warning",
       isDispensingBlocked: false,
-      policyNotes: "Priority rotation required. Issue to wards/dispensaries with immediate consumption needs.",
+      policyNotes: "Priority rotation required. 1 month or less remaining until expiration.",
+      categoryTier: "critical_1m",
+      categoryLabel: "Critical (≤1 Month)",
+      categoryColor: "#DC2626",
     };
   }
 
@@ -103,17 +125,105 @@ export function evaluateMedicineExpiry(
       label: `Near Expiry (${daysRemaining}d)`,
       badgeVariant: "alert",
       isDispensingBlocked: false,
-      policyNotes: "Within active monitoring window. Front-load in FEFO dispensing schedule.",
+      policyNotes: "Within 6-month near-expiry timeline. Front-load in FEFO dispensing schedule.",
+      categoryTier: "near_expiry_6m",
+      categoryLabel: "Near Expiry (≤6 Months)",
+      categoryColor: "#EAB308",
+    };
+  }
+
+  if (daysRemaining < validYearDays) {
+    const months = Math.round(daysRemaining / 30);
+    return {
+      daysRemaining,
+      status: "valid",
+      label: `Safe (${months}mo left)`,
+      badgeVariant: "success",
+      isDispensingBlocked: false,
+      policyNotes: "Safe shelf-life in standard standing (6 to 12 months remaining).",
+      categoryTier: "safe_shelf",
+      categoryLabel: "Safe (6–12 Months)",
+      categoryColor: "#2DD4BF",
     };
   }
 
   return {
     daysRemaining,
     status: "valid",
-    label: `Valid (${daysRemaining}d)`,
+    label: `Valid (≥1 yr)`,
     badgeVariant: "success",
     isDispensingBlocked: false,
-    policyNotes: "Batch is in good standing with standard shelf life.",
+    policyNotes: "Batch is in prime standing with at least 1 year shelf-life remaining.",
+    categoryTier: "valid_year",
+    categoryLabel: "Valid (≥1 Year)",
+    categoryColor: "#00594C",
+  };
+}
+
+/**
+ * Returns UI badge styling and metadata for real-time stock expiry classification.
+ */
+export function getExpiryCategoryBadge(daysRemaining: number | null, verified: boolean = true) {
+  if (!verified || daysRemaining === null) {
+    return {
+      tier: "unverified" as const,
+      label: "Pending Verification",
+      sublabel: "Verification required",
+      color: "#64748B",
+      bgClass: "bg-slate-100 text-slate-700 border-slate-300",
+      dotClass: "bg-slate-500",
+    };
+  }
+  if (daysRemaining < 0) {
+    return {
+      tier: "expired" as const,
+      label: "Expired (Quarantine)",
+      sublabel: `Expired ${Math.abs(daysRemaining)}d ago`,
+      color: "#DC2626",
+      bgClass: "bg-rose-100 text-rose-900 border-rose-300 font-bold",
+      dotClass: "bg-rose-600",
+    };
+  }
+  if (daysRemaining <= 30) {
+    return {
+      tier: "critical_1m" as const,
+      label: "Critical (≤1 Month)",
+      sublabel: `${daysRemaining}d left — 1 month cutoff`,
+      color: "#DC2626",
+      bgClass: "bg-rose-50 text-rose-800 border-rose-300 font-semibold",
+      dotClass: "bg-rose-600",
+    };
+  }
+  if (daysRemaining <= 180) {
+    const mo = Math.max(1, Math.round(daysRemaining / 30));
+    return {
+      tier: "near_expiry_6m" as const,
+      label: "Near Expiry (≤6 Months)",
+      sublabel: `${daysRemaining}d remaining (~${mo}mo)`,
+      color: "#EAB308",
+      bgClass: "bg-amber-50 text-amber-900 border-amber-300 font-semibold",
+      dotClass: "bg-amber-500",
+    };
+  }
+  if (daysRemaining < 365) {
+    const mo = Math.round(daysRemaining / 30);
+    return {
+      tier: "safe_shelf" as const,
+      label: "Safe Shelf (6–12 Months)",
+      sublabel: `${daysRemaining}d remaining (~${mo}mo)`,
+      color: "#2DD4BF",
+      bgClass: "bg-teal-50 text-teal-800 border-teal-300 font-medium",
+      dotClass: "bg-teal-500",
+    };
+  }
+  const mo = Math.round(daysRemaining / 30);
+  return {
+    tier: "valid_year" as const,
+    label: "Valid In Stock (≥1 Year)",
+    sublabel: `${daysRemaining}d remaining (~${mo}mo)`,
+    color: "#00594C",
+    bgClass: "bg-[#EAF5F2] text-[#00594C] border-[#00594C]/30 font-semibold",
+    dotClass: "bg-[#00594C]",
   };
 }
 

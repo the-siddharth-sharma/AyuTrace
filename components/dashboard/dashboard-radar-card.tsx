@@ -103,7 +103,7 @@ export function DashboardRadarCard({
             <div className="flex items-center gap-2">
               <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
               <span className="font-semibold text-stone-900 group-hover:text-amber-800">
-                Expiring ≤90 days
+                Expiring ≤6 months
               </span>
             </div>
             <span className={nearExpiryBatches > 0 ? "font-bold text-amber-700" : "font-bold text-stone-500"}>

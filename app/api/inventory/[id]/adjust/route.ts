@@ -23,8 +23,8 @@ export async function POST(
       batchId: id,
     });
 
-    const result = await prisma.$transaction(async (tx) => {
-      const balance = await tx.stockBalance.findUnique({
+    const executeAdjust = async (client: any) => {
+      const balance = await client.stockBalance.findUnique({
         where: {
           batchId_locationId: {
             batchId: id,
@@ -42,7 +42,7 @@ export async function POST(
         );
       }
 
-      const updatedBalance = await tx.stockBalance.upsert({
+      const updatedBalance = await client.stockBalance.upsert({
         where: {
           batchId_locationId: {
             batchId: id,
@@ -59,7 +59,7 @@ export async function POST(
         },
       });
 
-      const movement = await tx.stockMovement.create({
+      const movement = await client.stockMovement.create({
         data: {
           batchId: id,
           destinationLocationId: validated.quantityChange > 0 ? validated.locationId : null,
@@ -73,7 +73,18 @@ export async function POST(
       });
 
       return { balance: updatedBalance, movement };
-    });
+    };
+
+    let result;
+    try {
+      result = await prisma.$transaction(async (tx) => executeAdjust(tx), { timeout: 15000 });
+    } catch (txError: any) {
+      if (txError?.code === "P2028" || txError?.message?.includes("Transaction")) {
+        result = await executeAdjust(prisma);
+      } else {
+        throw txError;
+      }
+    }
 
     return NextResponse.json({ success: true, data: result });
   } catch (error: any) {
