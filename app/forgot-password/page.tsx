@@ -203,14 +203,14 @@ export default function ForgotPasswordPage() {
             </div>
           </div>
         </Link>
-        <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
           {step === "success"
             ? "Password Reset Complete"
             : step === "verify_reset"
             ? "Enter Verification OTP"
             : "Reset Account Password"}
         </h2>
-        <p className="mt-1.5 text-sm text-slate-500">
+        <p className="mt-1.5 text-sm sm:text-base font-semibold text-stone-600">
           {step === "success"
             ? "Your clinical credentials have been updated securely."
             : step === "verify_reset"
@@ -220,36 +220,36 @@ export default function ForgotPasswordPage() {
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-md">
-        <Card className="border-slate-200 shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
+        <Card className="border-[#EDE8DF] shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
-              <div className="flex-1 font-medium">{errorMessage}</div>
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-semibold text-rose-800 animate-in fade-in">
+              <AlertCircle className="h-4.5 w-4.5 shrink-0 text-rose-600 mt-0.5" />
+              <div className="flex-1 font-bold">{errorMessage}</div>
             </div>
           )}
 
           {/* Success Notice Banner */}
           {successNotice && step === "verify_reset" && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-teal-200 bg-teal-50 p-3 text-sm text-teal-800 animate-in fade-in">
-              <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600 mt-0.5" />
-              <div className="flex-1 font-medium">{successNotice}</div>
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-teal-200 bg-teal-50 p-3.5 text-sm font-semibold text-teal-800 animate-in fade-in">
+              <CheckCircle2 className="h-4.5 w-4.5 shrink-0 text-teal-600 mt-0.5" />
+              <div className="flex-1 font-bold">{successNotice}</div>
             </div>
           )}
 
           {/* STEP 1: Enter Email & Request OTP */}
           {step === "request_otp" && (
-            <form onSubmit={handleRequestOtp} className="space-y-4">
+            <form onSubmit={handleRequestOtp} className="space-y-4.5">
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                  className="block text-sm sm:text-base font-bold text-stone-800 mb-1.5"
                 >
                   Registered Work / Hospital Email
                 </label>
                 <div className="relative">
-                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">
-                    <Mail className="h-4 w-4" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-stone-500">
+                    <Mail className="h-4.5 w-4.5" />
                   </div>
                   <Input
                     id="email"
@@ -260,7 +260,7 @@ export default function ForgotPasswordPage() {
                     placeholder="name@hospital.org"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-9 text-sm h-10"
+                    className="pl-10 text-base h-11 font-medium text-stone-900 rounded-xl"
                     disabled={isLoading}
                   />
                 </div>
@@ -269,17 +269,17 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
+                className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-bold py-3 rounded-xl shadow-xs text-base"
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     <span>Sending security code...</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center gap-1.5 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-base">
                     <span>Send Verification Code (OTP)</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowRight className="h-4 w-4" />
                   </div>
                 )}
               </Button>
@@ -421,17 +421,17 @@ export default function ForgotPasswordPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
+                className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-bold py-3 rounded-xl shadow-xs text-base"
               >
                 {isLoading ? (
-                  <div className="flex items-center gap-2 text-sm">
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  <div className="flex items-center gap-2 text-base">
+                    <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                     <span>Updating password...</span>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center gap-1.5 text-sm">
+                  <div className="flex items-center justify-center gap-2 text-base">
                     <span>Reset Password & Secure Account</span>
-                    <ArrowRight className="h-3.5 w-3.5" />
+                    <ArrowRight className="h-4 w-4" />
                   </div>
                 )}
               </Button>
@@ -443,9 +443,9 @@ export default function ForgotPasswordPage() {
                     setStep("request_otp");
                     setErrorMessage(null);
                   }}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-semibold text-stone-700 hover:text-stone-950 transition-colors"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
+                  <ArrowLeft className="h-4 w-4" />
                   <span>Back to Email Entry</span>
                 </button>
               </div>
@@ -455,21 +455,21 @@ export default function ForgotPasswordPage() {
           {/* STEP 3: Success Confirmation */}
           {step === "success" && (
             <div className="text-center py-4 space-y-4">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-100 text-teal-700">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-teal-100 text-[#00594C]">
                 <CheckCircle2 className="h-8 w-8" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-900">
+                <h3 className="text-xl font-extrabold text-stone-900">
                   Password Updated Successfully
                 </h3>
-                <p className="mt-1 text-sm text-slate-600">
+                <p className="mt-1 text-base font-semibold text-stone-600">
                   Your new credentials are now active and all previous sessions have been securely terminated.
                 </p>
               </div>
               <Link href="/login" className="block pt-2">
-                <Button className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm">
+                <Button className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-bold py-3 rounded-xl shadow-xs text-base">
                   <span>Sign In to AyuTrace</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-4 w-4" />
                 </Button>
               </Link>
             </div>
@@ -477,8 +477,8 @@ export default function ForgotPasswordPage() {
         </Card>
 
         {/* Clinical Compliance Footer */}
-        <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-slate-400">
-          <ShieldCheck className="h-4 w-4 text-teal-600" />
+        <div className="mt-6 flex items-center justify-center gap-2 text-center text-xs sm:text-sm font-semibold text-stone-500">
+          <ShieldCheck className="h-4.5 w-4.5 text-[#00594C]" />
           <span>Statutory Batch Expiry Verification Protocol • 21 CFR Part 11</span>
         </div>
       </div>

@@ -153,21 +153,21 @@ export default function RegisterPage() {
             </div>
           </div>
         </Link>
-        <h2 className="mt-4 text-2xl font-bold tracking-tight text-slate-900">
+        <h2 className="mt-4 text-2xl sm:text-3xl font-extrabold tracking-tight text-stone-900">
           Create Clinical Healthcare Account
         </h2>
-        <p className="mt-1.5 text-sm text-slate-500">
+        <p className="mt-1.5 text-sm sm:text-base font-semibold text-stone-600">
           Enroll your pharmacy, ward or facility into real-time batch traceability
         </p>
       </div>
 
       <div className="mt-6 sm:mx-auto sm:w-full sm:max-w-xl">
-        <Card className="border-slate-200 shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
+        <Card className="border-[#EDE8DF] shadow-xl bg-white/95 backdrop-blur-sm p-6 sm:p-8 rounded-2xl">
           {/* Error Banner */}
           {errorMessage && (
-            <div className="mb-5 flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800 animate-in fade-in">
-              <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
-              <div className="flex-1 font-medium">{errorMessage}</div>
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3.5 text-sm font-semibold text-rose-800 animate-in fade-in">
+              <AlertCircle className="h-4.5 w-4.5 shrink-0 text-rose-600 mt-0.5" />
+              <div className="flex-1 font-bold">{errorMessage}</div>
             </div>
           )}
 
@@ -401,28 +401,28 @@ export default function RegisterPage() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full gap-2 bg-teal-700 hover:bg-teal-800 text-white font-semibold py-2.5 rounded-lg shadow-sm text-sm"
+              className="w-full gap-2 bg-[#00594C] hover:bg-[#00473D] text-white font-bold py-3 rounded-xl shadow-xs text-base"
             >
               {isLoading ? (
-                <div className="flex items-center gap-2 text-sm">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <div className="flex items-center gap-2 text-base">
+                  <div className="h-4.5 w-4.5 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   <span>Registering healthcare credentials...</span>
                 </div>
               ) : (
-                <div className="flex items-center justify-center gap-1.5 text-sm">
+                <div className="flex items-center justify-center gap-2 text-base">
                   <span>Create Account & Enter AyuTrace</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <ArrowRight className="h-4 w-4" />
                 </div>
               )}
             </Button>
           </form>
 
           {/* Link back to Sign In */}
-          <div className="mt-6 text-center text-sm text-slate-600 border-t border-slate-100 pt-4">
+          <div className="mt-6 text-center text-sm sm:text-base font-semibold text-stone-700 border-t border-[#EDE8DF] pt-4">
             Already have an active clinical profile?{" "}
             <Link
               href="/login"
-              className="font-bold text-teal-700 hover:text-teal-800 underline underline-offset-2"
+              className="font-extrabold text-[#00594C] hover:text-[#00473D] underline underline-offset-2"
             >
               Sign In
             </Link>
@@ -430,13 +430,13 @@ export default function RegisterPage() {
         </Card>
 
         {/* Security badges */}
-        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs text-slate-500">
-          <div className="flex items-center gap-1">
-            <ShieldCheck className="h-3.5 w-3.5 text-teal-600" />
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-4 text-xs sm:text-sm font-semibold text-stone-500">
+          <div className="flex items-center gap-1.5">
+            <ShieldCheck className="h-4 w-4 text-[#00594C]" />
             <span>End-to-End Scrypt Encryption</span>
           </div>
-          <div className="flex items-center gap-1">
-            <CheckCircle2 className="h-3.5 w-3.5 text-teal-600" />
+          <div className="flex items-center gap-1.5">
+            <CheckCircle2 className="h-4 w-4 text-[#00594C]" />
             <span>Audit-Logged Access</span>
           </div>
           <div className="flex items-center gap-1">

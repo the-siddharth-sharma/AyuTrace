@@ -65,7 +65,7 @@ export function KpiCards({
           <Card className="p-4 sm:p-5 hover:border-stone-300 hover:shadow-xs transition-all relative overflow-hidden">
             {/* Top row: Label & Mini Sparkline Wave (MedCounter Style) */}
             <div className="flex items-start justify-between gap-2">
-              <span className="text-[10px] sm:text-[11px] font-semibold text-stone-500 uppercase tracking-wider">
+              <span className="text-xs sm:text-[13px] font-bold text-stone-600 uppercase tracking-wider">
                 {card.title}
               </span>
 
@@ -83,7 +83,7 @@ export function KpiCards({
                         ? "M1 15 Q 12 5, 25 10 T 49 4"
                         : "M1 16 Q 15 16, 25 14 T 49 3"
                     }
-                    strokeWidth="2"
+                    strokeWidth="2.5"
                     strokeLinecap="round"
                     fill="none"
                   />
@@ -93,18 +93,18 @@ export function KpiCards({
 
             {/* Middle: Big Stat Number */}
             <div className="mt-3 flex items-baseline gap-2">
-              <span className="text-2xl sm:text-3xl font-bold tracking-tight text-stone-900">
+              <span className="text-3xl sm:text-[34px] font-extrabold tracking-tight text-stone-900 leading-tight">
                 {card.value}
               </span>
               {card.badge && (
-                <span className="text-[10px] font-bold text-amber-800 bg-amber-50 px-1.5 py-0.5 rounded-full border border-amber-200">
+                <span className="text-xs font-bold text-amber-900 bg-amber-100/90 px-2 py-0.5 rounded-full border border-amber-300">
                   {card.badge}
                 </span>
               )}
             </div>
 
             {/* Bottom: Subtitle / Comparison */}
-            <div className="mt-1.5 flex items-center justify-between text-[11px] text-stone-400">
+            <div className="mt-1.5 flex items-center justify-between text-xs sm:text-[13px] font-semibold text-stone-600">
               <span className="truncate">{card.subtitle}</span>
             </div>
           </Card>

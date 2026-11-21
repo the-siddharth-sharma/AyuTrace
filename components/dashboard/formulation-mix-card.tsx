@@ -50,13 +50,13 @@ export function FormulationMixCard({
   return (
     <Card className="h-full flex flex-col justify-between">
       <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-bold text-stone-900">
+        <CardTitle className="text-base sm:text-lg font-extrabold text-stone-900">
           Formulation mix
         </CardTitle>
       </CardHeader>
 
       <CardContent className="pt-2 flex-1 flex flex-col justify-center">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3.5">
           {/* Donut Chart with Center Total (MedCounter style) */}
           <div className="relative h-28 w-28 shrink-0">
             <ResponsiveContainer width="100%" height="100%">
@@ -80,33 +80,33 @@ export function FormulationMixCard({
             </ResponsiveContainer>
             {/* Center Text in Donut */}
             <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-              <span className="text-base font-bold text-stone-900 leading-none">
+              <span className="text-lg sm:text-xl font-extrabold text-stone-900 leading-none">
                 {totalBatches}
               </span>
-              <span className="text-[9px] font-semibold text-stone-400 uppercase tracking-wider mt-0.5">
+              <span className="text-[11px] font-bold text-stone-600 uppercase tracking-wider mt-0.5">
                 LOTS
               </span>
             </div>
           </div>
 
           {/* Legend on Right (MedCounter style) */}
-          <div className="flex-1 space-y-2 min-w-0">
+          <div className="flex-1 space-y-2.5 min-w-0">
             {data.map((item) => (
-              <div key={item.name} className="flex items-center justify-between text-xs">
+              <div key={item.name} className="flex items-center justify-between">
                 <div className="flex items-center gap-2 min-w-0 pr-1">
                   <span
-                    className="h-2 w-2 rounded-full shrink-0"
+                    className="h-2.5 w-2.5 rounded-full shrink-0"
                     style={{ backgroundColor: item.color }}
                   />
-                  <span className="font-medium text-stone-700 truncate">
+                  <span className="text-sm sm:text-[15px] font-bold text-stone-900 truncate">
                     {item.name}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-right shrink-0">
-                  <span className="font-bold text-stone-900">
+                  <span className="text-sm sm:text-base font-extrabold text-stone-900">
                     {item.value}
                   </span>
-                  <span className="text-[10px] text-stone-400 w-7 text-right">
+                  <span className="text-xs sm:text-[13px] font-bold text-stone-600 w-8 text-right">
                     {item.percentage}%
                   </span>
                 </div>
@@ -116,9 +116,9 @@ export function FormulationMixCard({
         </div>
 
         {/* Bottom micro-stat */}
-        <div className="mt-4 pt-3 border-t border-[#EDE8DF]/70 flex items-center justify-between text-xs">
-          <span className="text-stone-500">Total units in stock</span>
-          <span className="font-bold text-stone-900">{totalUnits.toLocaleString()}</span>
+        <div className="mt-4 pt-3 border-t border-[#EDE8DF] flex items-center justify-between">
+          <span className="text-sm font-semibold text-stone-700">Total units in stock</span>
+          <span className="text-base font-extrabold text-stone-900">{totalUnits.toLocaleString()}</span>
         </div>
       </CardContent>
     </Card>

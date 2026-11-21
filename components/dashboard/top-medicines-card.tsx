@@ -33,14 +33,14 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
     <Card className="h-full flex flex-col justify-between">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-bold text-stone-900">
+          <CardTitle className="text-base sm:text-lg font-extrabold text-stone-900">
             Top medicines
           </CardTitle>
-          <span className="text-[11px] text-stone-400">By physical volume</span>
+          <span className="text-xs sm:text-[13px] font-bold text-stone-500">By physical volume</span>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3.5 flex-1">
+      <CardContent className="space-y-4 flex-1">
         {displayList.map((med, index) => {
           const percentage = Math.round((med.units / maxUnits) * 100);
 
@@ -50,30 +50,30 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
               href="/inventory"
               className="group block space-y-1.5"
             >
-              <div className="flex items-baseline justify-between text-xs">
-                <div className="flex items-center gap-2 min-w-0 pr-2">
-                  <span className="text-[11px] font-mono text-stone-400 w-3 shrink-0">
+              <div className="flex items-baseline justify-between">
+                <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                  <span className="text-xs sm:text-[13px] font-mono font-bold text-stone-500 w-3.5 shrink-0">
                     {index + 1}
                   </span>
-                  <p className="font-bold text-stone-900 group-hover:text-[#00594C] transition-colors truncate">
+                  <p className="text-sm sm:text-base font-extrabold text-stone-900 group-hover:text-[#00594C] transition-colors truncate">
                     {med.name}
                   </p>
                   {med.strength && (
-                    <span className="text-[10px] text-stone-400 shrink-0 hidden sm:inline">
+                    <span className="text-xs font-bold text-stone-500 shrink-0 hidden sm:inline">
                       {med.strength}
                     </span>
                   )}
                 </div>
                 <div className="text-right shrink-0">
-                  <span className="font-bold text-stone-900">
+                  <span className="text-sm sm:text-base font-extrabold text-stone-900">
                     {med.units.toLocaleString()}
                   </span>
-                  <span className="text-[10px] text-stone-400 ml-1">units</span>
+                  <span className="text-xs font-bold text-stone-500 ml-1">units</span>
                 </div>
               </div>
 
               {/* Sleek Progress Bar (MedCounter style) */}
-              <div className="h-1.5 w-full bg-[#F2EFE9] rounded-full overflow-hidden">
+              <div className="h-2 w-full bg-[#EDE8DF] rounded-full overflow-hidden">
                 <div
                   className="h-full bg-[#00594C] rounded-full transition-all duration-500"
                   style={{ width: `${Math.max(percentage, 8)}%` }}

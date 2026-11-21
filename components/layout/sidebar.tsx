@@ -135,10 +135,10 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
 
           {!isCollapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold tracking-tight text-stone-900 leading-tight truncate">
+              <span className="text-base font-extrabold tracking-tight text-stone-900 leading-tight truncate">
                 AyuTrace
               </span>
-              <span className="text-[10px] font-medium text-stone-400 truncate">
+              <span className="text-xs font-semibold text-stone-600 truncate">
                 {user?.facility?.name || "Clinical Pharmacy"}
               </span>
             </div>
@@ -151,7 +151,7 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
         {/* Search Input (MedCounter Style) */}
         {!isCollapsed && (
           <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-stone-400" />
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-stone-500" />
             <input
               type="text"
               placeholder="Search..."
@@ -160,9 +160,9 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
                 const searchInput = document.getElementById("global-search");
                 if (searchInput) searchInput.focus();
               }}
-              className="w-full pl-8 pr-8 py-1.5 bg-[#F6F4EE] text-xs text-stone-700 placeholder-stone-400 rounded-xl border border-[#EDE8DF] outline-none cursor-pointer hover:bg-[#F2EFE7] transition-colors"
+              className="w-full pl-9 pr-9 py-2 bg-[#F6F4EE] text-sm font-semibold text-stone-800 placeholder-stone-500 rounded-xl border border-[#EDE8DF] outline-none cursor-pointer hover:bg-[#F2EFE7] transition-colors"
             />
-            <span className="absolute right-2.5 top-2 text-[10px] text-stone-400 font-mono">⌘K</span>
+            <span className="absolute right-2.5 top-2 text-xs text-stone-500 font-mono font-bold">⌘K</span>
           </div>
         )}
 
@@ -170,7 +170,7 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
         {navSections.map((section) => (
           <div key={section.title} className="space-y-1">
             {!isCollapsed && (
-              <p className="px-2.5 text-[10px] font-bold uppercase tracking-wider text-stone-400">
+              <p className="px-2.5 text-xs font-extrabold uppercase tracking-wider text-stone-600">
                 {section.title}
               </p>
             )}
@@ -184,19 +184,19 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
                     key={item.name}
                     href={item.href}
                     className={cn(
-                      "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs font-medium transition-all",
+                      "group flex items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-bold transition-all",
                       isActive
-                        ? "bg-[#EAF5F2] text-[#00594C] font-semibold"
-                        : "text-stone-600 hover:bg-[#F6F4EE] hover:text-stone-900"
+                        ? "bg-[#EAF5F2] text-[#00594C] font-extrabold"
+                        : "text-stone-700 hover:bg-[#F6F4EE] hover:text-stone-950"
                     )}
                     title={isCollapsed ? item.name : undefined}
                   >
                     <Icon
                       className={cn(
-                        "h-4 w-4 shrink-0 transition-colors",
+                        "h-4.5 w-4.5 shrink-0 transition-colors",
                         isActive
                           ? "text-[#00594C]"
-                          : "text-stone-400 group-hover:text-stone-600"
+                          : "text-stone-500 group-hover:text-stone-700"
                       )}
                     />
                     {!isCollapsed && (
@@ -205,7 +205,7 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
                         {item.count !== undefined && (
                           <span
                             className={cn(
-                              "ml-auto rounded-full px-1.5 py-0.2 text-[10px] font-bold",
+                              "ml-auto rounded-full px-2 py-0.5 text-xs font-extrabold",
                               item.countColor || "bg-[#FEE2E2] text-[#B91C1C]"
                             )}
                           >
@@ -213,7 +213,7 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
                           </span>
                         )}
                         {item.badge && (
-                          <span className="ml-auto rounded-md bg-[#EAF5F2] text-[#00594C] px-1.5 py-0.5 text-[9px] font-bold tracking-wide">
+                          <span className="ml-auto rounded-md bg-[#EAF5F2] text-[#00594C] px-2 py-0.5 text-[11px] font-bold tracking-wide">
                             {item.badge}
                           </span>
                         )}
@@ -231,14 +231,14 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
       <div className="p-3 border-t border-[#EDE8DF] space-y-1 bg-[#FAF8F5]/60">
         <button
           onClick={() => setIsCollapsed(!isCollapsed)}
-          className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-medium text-stone-500 hover:bg-[#F4F1EA] hover:text-stone-800 transition-colors cursor-pointer"
+          className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-bold text-stone-700 hover:bg-[#F4F1EA] hover:text-stone-950 transition-colors cursor-pointer"
           title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
         >
           {isCollapsed ? (
-            <ChevronRight className="h-4 w-4 shrink-0 text-stone-400" />
+            <ChevronRight className="h-4.5 w-4.5 shrink-0 text-stone-500" />
           ) : (
             <>
-              <ChevronLeft className="h-4 w-4 shrink-0 text-stone-400" />
+              <ChevronLeft className="h-4.5 w-4.5 shrink-0 text-stone-500" />
               <span>« Collapse</span>
             </>
           )}
@@ -247,18 +247,18 @@ export function Sidebar({ alertCount = 0 }: SidebarProps) {
         {user ? (
           <button
             onClick={() => logout()}
-            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-medium text-stone-500 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer"
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-bold text-stone-700 hover:bg-rose-50 hover:text-rose-800 transition-colors cursor-pointer"
             title="Sign out"
           >
-            <LogOut className="h-4 w-4 shrink-0" />
+            <LogOut className="h-4.5 w-4.5 shrink-0" />
             {!isCollapsed && <span>Sign out</span>}
           </button>
         ) : (
           <Link
             href="/login"
-            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-[#00594C] hover:bg-[#EAF5F2] transition-colors"
+            className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-sm font-bold text-[#00594C] hover:bg-[#EAF5F2] transition-colors"
           >
-            <ShieldCheck className="h-4 w-4 shrink-0" />
+            <ShieldCheck className="h-4.5 w-4.5 shrink-0" />
             {!isCollapsed && <span>Sign In</span>}
           </Link>
         )}
