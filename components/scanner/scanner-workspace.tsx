@@ -110,13 +110,60 @@ export function ScannerWorkspace() {
     }
   };
 
-  const handleFile = (file: File) => {
-    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) {
+  // Compress and resize client-side to max 1600px / 85% JPEG to eliminate upload lag and reduce token overhead
+  const optimizeImageForOCR = (file: File): Promise<string> => {
+    return new Promise((resolve) => {
+      if (file.type === "image/svg+xml") {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1600;
+          let width = img.width;
+          let height = img.height;
+
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const compressed = canvas.toDataURL("image/jpeg", 0.85);
+            resolve(compressed);
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = () => resolve(e.target?.result as string);
+        img.src = e.target?.result as string;
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFile = async (file: File) => {
+    if (!file.type.match(/^image\/(jpeg|jpg|png|webp|svg\+xml)$/i)) {
       setScanError("Please select a valid packaging image (JPG, PNG, or WebP).");
       return;
     }
-    if (file.size > 8 * 1024 * 1024) {
-      setScanError("Image exceeds 8MB limit. Please upload a compressed photo.");
+    if (file.size > 20 * 1024 * 1024) {
+      setScanError("Image exceeds 20MB limit. Please upload a clear photo.");
       return;
     }
 
@@ -125,11 +172,16 @@ export function ScannerWorkspace() {
     setExtractedData(null);
     setSaveSuccess(false);
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedDataUrl = await optimizeImageForOCR(file);
+      setImagePreview(optimizedDataUrl);
+    } catch {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   // 1-Click Sample Ingestion

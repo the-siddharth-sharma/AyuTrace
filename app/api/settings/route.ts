@@ -38,7 +38,7 @@ export async function GET() {
         ...settings,
         geminiApiKey: settings.geminiApiKey ? "••••••••••••••••" : "",
         isGemmaConfigured: isConfigured,
-        configuredModel: process.env.GEMMA_MODEL || "gemini-3.8-flash",
+        configuredModel: process.env.GEMMA_MODEL || "gemini-3.5-flash-lite",
         facilities,
       };
     });
@@ -99,7 +99,7 @@ export async function PUT(request: Request) {
         ...updated,
         geminiApiKey: updated.geminiApiKey ? "••••••••••••••••" : "",
         isGemmaConfigured: isConfigured,
-        configuredModel: process.env.GEMMA_MODEL || "gemini-3.8-flash",
+        configuredModel: process.env.GEMMA_MODEL || "gemini-3.5-flash-lite",
       },
     });
   } catch (error: any) {

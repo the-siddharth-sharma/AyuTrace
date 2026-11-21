@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { prisma } from "@/lib/db/prisma";
 
@@ -301,21 +301,22 @@ export async function analyzeMedicinePackageWithGemma(
     };
   }
 
-  // Try live models available on Google AI Studio with priority for Gemini 3.8 Flash
+  // Try live models available on Google AI Studio with priority for high-speed Flash Lite models (sub-3s latency)
   const configuredModel = process.env.GEMMA_MODEL?.trim();
   const candidateModels = Array.from(
     new Set([
       ...(configuredModel && !configuredModel.includes("gemma-4-26b") ? [configuredModel] : []),
+      "gemini-3.5-flash-lite",
+      "gemini-3.1-flash-lite",
+      "gemini-3.6-flash",
       "gemini-3.8-flash",
       "gemini-3.5-flash",
-      "gemini-3.1-flash-lite",
-      "gemini-flash-latest",
     ])
   );
 
-  const genAI = new GoogleGenerativeAI(apiKey);
+  const ai = new GoogleGenAI({ apiKey });
 
-  const systemPrompt = `You are AyuTrace's pharmaceutical packaging inspection specialist powered by Google Gemini 3.8 Flash.
+  const systemPrompt = `You are AyuTrace's pharmaceutical packaging inspection specialist powered by Google Gemini.
 Your sole role is to accurately transcribe physical text printed on real medicine packaging, blister packs, vials, ampoules, or syrup bottles.
 
 SAFETY & PHARMACEUTICAL CONSTRAINTS:
@@ -348,18 +349,13 @@ SAFETY & PHARMACEUTICAL CONSTRAINTS:
 
   for (const modelName of candidateModels) {
     try {
-      const model = genAI.getGenerativeModel({
-        model: modelName,
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.1,
-        },
-      });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error("Request timed out after 15s")), 15000)
+        setTimeout(() => reject(new Error(`Model ${modelName} request timed out after 6s`)), 6000)
       );
-      const result = await Promise.race([
-        model.generateContent([
+
+      const requestPromise = ai.models.generateContent({
+        model: modelName,
+        contents: [
           systemPrompt,
           {
             inlineData: {
@@ -367,12 +363,15 @@ SAFETY & PHARMACEUTICAL CONSTRAINTS:
               mimeType: cleanMime,
             },
           },
-        ]),
-        timeoutPromise,
-      ]);
+        ],
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.1,
+        },
+      });
 
-      const response = await result.response;
-      const text = response.text().trim();
+      const response = await Promise.race([requestPromise, timeoutPromise]);
+      const text = response.text ? response.text.trim() : "";
       const jsonText = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```$/i, "").trim();
       const parsed = JSON.parse(jsonText);
 
