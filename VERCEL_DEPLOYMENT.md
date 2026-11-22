@@ -10,13 +10,19 @@ In your [Vercel Dashboard](https://vercel.com) → Your Project → **Settings**
 
 | Variable | Recommended Value | Notes |
 | :--- | :--- | :--- |
-| `DATABASE_URL` | `postgresql://postgres.kyxalzuunmejkuljtpcl:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true` | Supabase Transaction Pooler (Port 6543) for serverless queries |
-| `DIRECT_URL` | `postgresql://postgres.kyxalzuunmejkuljtpcl:[YOUR-PASSWORD]@aws-0-ap-northeast-1.pooler.supabase.com:5432/postgres` | Supabase Direct Session Connection (Port 5432) |
-| `GEMINI_API_KEY` | `Your Google Gemini API Key` | Google Gemini API key for Gemma 4 packaging vision OCR |
-| `GEMMA_MODEL` | `gemma-4-26b-a4b-it` | Target model variant |
+| `DATABASE_URL` | Copy from Supabase Dashboard → **Connect** → **Transaction pooler** (Port 6543) and append `?pgbouncer=true` (or `&pgbouncer=true`) | Supabase PgBouncer pooler connection string for serverless queries |
+| `DIRECT_URL` | Copy from Supabase Dashboard → **Connect** → **Session** pooler or direct connection (Port 5432) | Direct PostgreSQL connection string for Prisma migrations and schema pushes |
+| `GEMINI_API_KEY` | `Your Google Gemini API Key` | Google Gemini API key for packaging vision OCR |
+| `GEMMA_MODEL` | `gemma-4-26b-a4b-it` | Target vision model variant |
+| `SMTP_USER` | `your-email@gmail.com` or `apikey` | SMTP username for password reset OTP delivery |
+| `SMTP_PASS` | `your-app-password` or API key | Gmail App Password (16 characters) or SMTP service token |
+| `SMTP_HOST` | `smtp.gmail.com` | *(Optional, default: `smtp.gmail.com`)* SMTP mail server host |
+| `SMTP_PORT` | `465` | *(Optional, default: `465`)* SMTP SSL port (or `587` for TLS) |
+| `SMTP_SECURE` | `true` | *(Optional, default: `true`)* Set `true` for 465, `false` for 587 |
+| `SMTP_FROM` | `"AyuTrace Security" <your-email@gmail.com>` | Sender header. Required when `SMTP_USER` is an API key (e.g. SendGrid); optional for email-based usernames |
 
-> [!NOTE]
-> Even if environment variables take a moment to propagate, AyuTrace includes an automatic cloud fallback in `lib/db/prisma.ts` so login and database queries will never fail with datasource format errors.
+> [!IMPORTANT]
+> Copy both connection strings directly from your project's **Connect** dialog in the Supabase Dashboard rather than constructing them manually. The pooler cluster host index (`aws-0`, `aws-1`, etc.) is assigned uniquely per project and cannot be inferred from the cloud region alone. For `DATABASE_URL`, ensure `pgbouncer=true` is appended to the connection string to allow Prisma to work smoothly with Supabase's transaction pooler. Ensure both `DATABASE_URL` and `DIRECT_URL` are configured in Vercel before triggering a deployment.
 
 ---
 

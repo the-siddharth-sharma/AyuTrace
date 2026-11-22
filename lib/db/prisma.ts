@@ -6,15 +6,26 @@ import { PrismaClient } from "@prisma/client";
  * so Vercel builds and serverless execution succeed seamlessly even if
  * environment variables are still being configured in the Vercel Dashboard.
  */
-const SUPABASE_DEFAULT_URL =
-  "postgresql://postgres.kyxalzuunmejkuljtpcl:Siddarth%40161120@aws-0-ap-northeast-1.pooler.supabase.com:6543/postgres?pgbouncer=true&connection_limit=1";
+// Ensure environment variables are loaded in CLI/script contexts
+if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) {
+  try {
+    const { loadEnvConfig } = require("@next/env");
+    loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
+  } catch {}
+}
 
 function getDatabaseUrl(): string {
-  let envUrl = process.env.DATABASE_URL?.trim();
+  let envUrl = process.env.DATABASE_URL?.trim() || process.env.DIRECT_URL?.trim();
 
   // If a valid PostgreSQL/Supabase URL is provided in the environment, prioritize it
   if (!envUrl || (!envUrl.startsWith("postgres://") && !envUrl.startsWith("postgresql://"))) {
-    envUrl = SUPABASE_DEFAULT_URL;
+    // Provide a safe placeholder only during Next.js build phase if env vars are missing
+    if (process.env.NEXT_PHASE === "phase-production-build" || process.env.NODE_ENV === "test") {
+      return "postgresql://build_placeholder:build_placeholder@localhost:5432/build_db";
+    }
+    throw new Error(
+      "Missing or invalid DATABASE_URL environment variable. Please configure DATABASE_URL in your .env or Vercel project settings."
+    );
   }
 
   // Ensure connection limit is optimized for serverless PgBouncer pooler

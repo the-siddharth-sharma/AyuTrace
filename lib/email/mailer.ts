@@ -3,9 +3,22 @@ import nodemailer from "nodemailer";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
 const SMTP_SECURE = process.env.SMTP_SECURE !== "false"; // default true for 465
-const SMTP_USER = process.env.SMTP_USER || "info.ayutrace@gmail.com";
-const SMTP_PASS = process.env.SMTP_PASS || "snyqsidbrfkznirg";
-const SMTP_FROM = process.env.SMTP_FROM || '"AyuTrace Security" <info.ayutrace@gmail.com>';
+const SMTP_USER = process.env.SMTP_USER || "";
+const SMTP_PASS = process.env.SMTP_PASS || "";
+
+function getSenderAddress(): string {
+  if (process.env.SMTP_FROM?.trim()) {
+    return process.env.SMTP_FROM.trim();
+  }
+  // When SMTP_USER is a valid email address (e.g. Gmail/Workspace), use it as fallback
+  if (SMTP_USER && SMTP_USER.includes("@")) {
+    return `"AyuTrace Security" <${SMTP_USER}>`;
+  }
+  // Fallback for non-email usernames (e.g. SendGrid "apikey" / token-based auth)
+  return '"AyuTrace Security" <noreply@ayutrace.org>';
+}
+
+const SMTP_FROM = getSenderAddress();
 
 /**
  * AyuTrace Mailer Transporter (Google Workspace / Gmail SMTP)
@@ -38,14 +51,35 @@ export async function sendPasswordResetOtpEmail({
 }: SendOtpParams): Promise<{ success: boolean; messageId?: string; error?: string }> {
   try {
     if (!SMTP_USER || !SMTP_PASS) {
+      if (process.env.NODE_ENV === "production" && process.env.DEMO_MODE !== "true") {
+        console.error(
+          "[Mailer Error] SMTP credentials are not configured in production environment."
+        );
+        return {
+          success: false,
+          error: "Email delivery service is currently unconfigured. Please contact your system administrator.",
+        };
+      }
       console.warn(
-        "[Mailer Security Notice] SMTP credentials are not configured in environment. OTP verification email not dispatched."
+        "[Mailer Development Notice] SMTP credentials are not configured. Returning mock success in development/demo mode."
       );
-      // In development / demo mode, return success so developers can test OTP flows without SMTP credentials
       return {
         success: true,
         messageId: "mock-otp-dispatch-id",
       };
+    }
+
+    // When using token or API-key based SMTP auth (e.g., SendGrid "apikey"), SMTP_FROM is required
+    if (!SMTP_USER.includes("@") && !process.env.SMTP_FROM?.trim()) {
+      if (process.env.NODE_ENV === "production" && process.env.DEMO_MODE !== "true") {
+        console.error(
+          "[Mailer Error] SMTP_USER is an API key or token without a configured SMTP_FROM email address."
+        );
+        return {
+          success: false,
+          error: "Email delivery service requires a valid sender address (SMTP_FROM). Please configure SMTP_FROM in environment variables.",
+        };
+      }
     }
     const greeting = name ? `Hello ${name},` : "Hello,";
 
