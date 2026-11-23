@@ -13,10 +13,11 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { cn } from "@/lib/utils";
 
 export interface TimelineItem {
-  month: string;
+  month?: string;
+  label?: string;
   fullMonth?: string;
   dateKey?: string;
-  units: number;
+  units?: number;
   batchCount?: number;
   medicines?: string[];
   hasExpiry?: boolean;
@@ -35,29 +36,41 @@ export function DashboardTrendCard({
 
   // Format data for continuous smooth curve (MedCounter style)
   const chartData = useMemo(() => {
-    const source = (monthlyTimeline && monthlyTimeline.length > 0) ? monthlyTimeline : timelineData;
-    if (source.length === 0) {
+    const rawSource = Array.isArray(monthlyTimeline) && monthlyTimeline.length > 0 
+      ? monthlyTimeline 
+      : Array.isArray(timelineData) && timelineData.length > 0 
+      ? timelineData 
+      : [];
+
+    if (rawSource.length === 0) {
       // Fallback sample points for smooth curve
       return [
-        { label: "Aug", units: 120 },
-        { label: "Sep", units: 260 },
-        { label: "Oct", units: 180 },
-        { label: "Nov", units: 340 },
-        { label: "Dec", units: 520 },
-        { label: "Jan", units: 753 },
+        { label: "Aug", units: 120, fullMonth: "August 2026", batchCount: 2 },
+        { label: "Sep", units: 260, fullMonth: "September 2026", batchCount: 4 },
+        { label: "Oct", units: 180, fullMonth: "October 2026", batchCount: 3 },
+        { label: "Nov", units: 340, fullMonth: "November 2026", batchCount: 5 },
+        { label: "Dec", units: 520, fullMonth: "December 2026", batchCount: 7 },
+        { label: "Jan", units: 753, fullMonth: "January 2027", batchCount: 11 },
       ];
     }
 
+    const normalized = rawSource.map((d: any) => ({
+      ...d,
+      label: d?.month || d?.label || d?.date || "Horizon",
+      units: Number(d?.units ?? d?.count ?? d?.valid ?? 0),
+      batchCount: Number(d?.batchCount ?? d?.batches ?? 0),
+    }));
+
     if (rangeFilter === "7D") {
-      return source.slice(-3).map((d) => ({ ...d, label: d.month }));
+      return normalized.slice(-3);
     }
     if (rangeFilter === "30D") {
-      return source.slice(-6).map((d) => ({ ...d, label: d.month }));
+      return normalized.slice(-6);
     }
     if (rangeFilter === "90D") {
-      return source.slice(-9).map((d) => ({ ...d, label: d.month }));
+      return normalized.slice(-9);
     }
-    return source.map((d) => ({ ...d, label: d.month }));
+    return normalized;
   }, [monthlyTimeline, timelineData, rangeFilter]);
 
   const totalUnits = useMemo(() => {
@@ -66,7 +79,7 @@ export function DashboardTrendCard({
 
   const peakPoint = useMemo(() => {
     if (chartData.length === 0) return null;
-    return chartData.reduce((max, d) => (d.units > max.units ? d : max), chartData[0]);
+    return chartData.reduce((max, d) => ((d.units || 0) > (max.units || 0) ? d : max), chartData[0]);
   }, [chartData]);
 
   return (
@@ -78,8 +91,8 @@ export function DashboardTrendCard({
               Stock & Expiry Trend
             </CardTitle>
             <CardDescription className="text-xs font-medium text-stone-600 mt-0.5">
-              {totalUnits.toLocaleString()} units projected across upcoming rotation horizons
-              {peakPoint ? ` • Peak: ${peakPoint.label} (${peakPoint.units} units)` : ""}
+              {(totalUnits ?? 0).toLocaleString()} units projected across upcoming rotation horizons
+              {peakPoint ? ` • Peak: ${peakPoint.label || ""} (${(peakPoint.units || 0).toLocaleString()} units)` : ""}
             </CardDescription>
           </div>
 
@@ -135,7 +148,7 @@ export function DashboardTrendCard({
                       <div className="rounded-xl border border-[#EDE8DF] bg-white p-3 shadow-lg text-xs">
                         <p className="font-bold text-stone-900">{data.fullMonth || data.label}</p>
                         <p className="text-xs text-[#00594C] font-semibold mt-1">
-                          {data.units} units scheduled
+                          {Number(data.units || 0).toLocaleString()} units scheduled
                         </p>
                         {data.batchCount ? (
                           <p className="text-[10px] text-stone-600 mt-0.5">

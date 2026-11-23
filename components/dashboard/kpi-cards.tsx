@@ -15,25 +15,25 @@ interface KpiCardsProps {
 }
 
 export function KpiCards({
-  registeredMedicines,
-  totalStockUnits,
-  activeBatches,
-  nearExpiryBatches,
-  expiredBatches,
-  trackingFacilities,
-}: KpiCardsProps) {
+  registeredMedicines = 0,
+  totalStockUnits = 0,
+  activeBatches = 0,
+  nearExpiryBatches = 0,
+  expiredBatches = 0,
+  trackingFacilities = 1,
+}: Partial<KpiCardsProps>) {
   const cards = [
     {
       title: "RECORDED STOCK UNITS",
-      value: totalStockUnits.toLocaleString(),
-      subtitle: `Across ${trackingFacilities} clinical storage units`,
+      value: (totalStockUnits ?? 0).toLocaleString(),
+      subtitle: `Across ${trackingFacilities ?? 1} clinical storage unit${(trackingFacilities ?? 1) > 1 ? "s" : ""}`,
       href: "/inventory",
       sparkColor: "#00594C",
       hasWarning: false,
     },
     {
       title: "ACTIVE BATCHES",
-      value: activeBatches.toLocaleString(),
+      value: (activeBatches ?? 0).toLocaleString(),
       subtitle: "100% GAMP 5 audited lots",
       href: "/inventory",
       sparkColor: "#00594C",
@@ -41,16 +41,16 @@ export function KpiCards({
     },
     {
       title: "EXPIRING SOON (≤90D)",
-      value: nearExpiryBatches.toLocaleString(),
+      value: (nearExpiryBatches ?? 0).toLocaleString(),
       subtitle: "FEFO rotation priority queue",
       href: "/expiry",
-      sparkColor: nearExpiryBatches > 0 ? "#F59E0B" : "#00594C",
-      hasWarning: nearExpiryBatches > 0,
-      badge: nearExpiryBatches > 0 ? `${nearExpiryBatches} urgent` : undefined,
+      sparkColor: (nearExpiryBatches ?? 0) > 0 ? "#F59E0B" : "#00594C",
+      hasWarning: (nearExpiryBatches ?? 0) > 0,
+      badge: (nearExpiryBatches ?? 0) > 0 ? `${nearExpiryBatches} urgent` : undefined,
     },
     {
       title: "DRUG FORMULATIONS",
-      value: registeredMedicines.toLocaleString(),
+      value: (registeredMedicines ?? 0).toLocaleString(),
       subtitle: "Unique clinical items tracked",
       href: "/inventory",
       sparkColor: "#00594C",

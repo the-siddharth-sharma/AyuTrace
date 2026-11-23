@@ -9,8 +9,10 @@ export interface TopMedicineItem {
   name: string;
   strength?: string | null;
   form?: string | null;
-  units: number;
-  batchCount: number;
+  units?: number;
+  totalUnits?: number;
+  batchCount?: number;
+  activeBatchesCount?: number;
 }
 
 interface TopMedicinesCardProps {
@@ -19,7 +21,7 @@ interface TopMedicinesCardProps {
 
 export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
   // If empty, supply representative clinical active medicines
-  const displayList = medicines.length > 0 ? medicines : [
+  const displayList = Array.isArray(medicines) && medicines.length > 0 ? medicines : [
     { id: "1", name: "Paracip 500", strength: "500 mg", form: "Tablet", units: 150, batchCount: 3 },
     { id: "2", name: "Augmentin 625 Duo", strength: "625 mg", form: "Tablet", units: 120, batchCount: 2 },
     { id: "3", name: "Metformin Hydrochloride IP", strength: "500 mg", form: "Tablet", units: 95, batchCount: 2 },
@@ -27,7 +29,10 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
     { id: "5", name: "Azithral 200 Suspension", strength: "200 mg", form: "Syrup", units: 45, batchCount: 1 },
   ];
 
-  const maxUnits = Math.max(...displayList.map((m) => m.units), 1);
+  const maxUnits = Math.max(
+    ...displayList.map((m) => Number(m?.units ?? m?.totalUnits ?? 0)),
+    1
+  );
 
   return (
     <Card className="h-full flex flex-col justify-between">
@@ -42,11 +47,13 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
 
       <CardContent className="space-y-3.5 flex-1">
         {displayList.map((med, index) => {
-          const percentage = Math.round((med.units / maxUnits) * 100);
+          const units = Number(med?.units ?? med?.totalUnits ?? 0);
+          const percentage = maxUnits > 0 ? Math.round((units / maxUnits) * 100) : 0;
+          const medName = med?.name || "Clinical formulation";
 
           return (
             <Link
-              key={med.id || med.name}
+              key={med?.id || `${medName}-${index}`}
               href="/inventory"
               className="group block space-y-1.5"
             >
@@ -56,9 +63,9 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
                     {index + 1}
                   </span>
                   <p className="font-bold text-stone-900 group-hover:text-[#00594C] transition-colors truncate">
-                    {med.name}
+                    {medName}
                   </p>
-                  {med.strength && (
+                  {med?.strength && (
                     <span className="text-[10px] text-stone-600 font-medium shrink-0 hidden sm:inline">
                       {med.strength}
                     </span>
@@ -66,7 +73,7 @@ export function TopMedicinesCard({ medicines = [] }: TopMedicinesCardProps) {
                 </div>
                 <div className="text-right shrink-0">
                   <span className="font-bold text-stone-900">
-                    {med.units.toLocaleString()}
+                    {units.toLocaleString()}
                   </span>
                   <span className="text-[10px] text-stone-600 ml-1 font-medium">units</span>
                 </div>

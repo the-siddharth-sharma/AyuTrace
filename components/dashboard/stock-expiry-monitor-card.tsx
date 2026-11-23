@@ -34,29 +34,68 @@ export function StockExpiryMonitorCard({
   totalBatches: fallbackTotalBatches = 11,
   totalUnits: fallbackTotalUnits = 708,
 }: StockExpiryMonitorCardProps) {
-  const totalBatches = monitorData?.totalBatches ?? fallbackTotalBatches;
+  const totalBatches = monitorData?.totalBatches ?? (monitorData as any)?.totalLots ?? fallbackTotalBatches;
   const totalUnits = monitorData?.totalUnits ?? fallbackTotalUnits;
 
   const chartData = useMemo(() => {
     if (monitorData?.breakdown && monitorData.breakdown.length > 0) {
-      const sum = monitorData.breakdown.reduce((acc, c) => acc + c.value, 0);
+      const sum = monitorData.breakdown.reduce((acc, c) => acc + (c.value || 0), 0);
       return monitorData.breakdown
-        .filter((item) => item.value > 0 || (item.batches && item.batches > 0))
+        .filter((item) => (item.value || 0) > 0 || ((item.batches || 0) > 0))
         .map((c) => {
           const pct =
             typeof c.percentage === "number"
               ? c.percentage
               : sum > 0
-              ? Math.round((c.value / sum) * 100)
+              ? Math.round(((c.value || 0) / sum) * 100)
               : 0;
           return {
-            name: c.name,
-            value: c.value,
-            batches: c.batches,
+            name: c.name || "Category",
+            value: Number(c.value || 0),
+            batches: Number(c.batches || 0),
             percentage: pct,
-            color: c.color,
+            color: c.color || "#00594C",
           };
         });
+    }
+
+    // Support flat structured monitor data if present
+    if ((monitorData as any)?.validUnits !== undefined || (monitorData as any)?.validLots !== undefined) {
+      const vUnits = Number((monitorData as any).validUnits || 0);
+      const vLots = Number((monitorData as any).validLots || 0);
+      const nUnits = Number((monitorData as any).nearExpiryUnits || 0);
+      const nLots = Number((monitorData as any).nearExpiryLots || 0);
+      const cUnits = Number((monitorData as any).criticalUnits || 0);
+      const cLots = Number((monitorData as any).criticalLots || 0);
+      const sum = vUnits + nUnits + cUnits || 1;
+
+      return [
+        {
+          name: "Valid (≥1 yr)",
+          value: vUnits,
+          batches: vLots,
+          percentage: Math.round((vUnits / sum) * 100),
+          color: "#00594C",
+        },
+        {
+          name: "Near exp (≤6m)",
+          value: nUnits,
+          batches: nLots,
+          percentage: Math.round((nUnits / sum) * 100),
+          color: "#EAB308",
+        },
+        ...(cUnits > 0 || cLots > 0
+          ? [
+              {
+                name: "1 mo left",
+                value: cUnits,
+                batches: cLots,
+                percentage: Math.round((cUnits / sum) * 100),
+                color: "#DC2626",
+              },
+            ]
+          : []),
+      ];
     }
 
     // Default stock expiry distribution matching user timeline rules:
@@ -149,7 +188,7 @@ export function StockExpiryMonitorCard({
         {/* Bottom micro-stat */}
         <div className="mt-4 pt-3 border-t border-[#EDE8DF] flex items-center justify-between text-xs">
           <span className="font-medium text-stone-700">Total units in stock</span>
-          <span className="font-bold text-stone-900">{totalUnits.toLocaleString()}</span>
+          <span className="font-bold text-stone-900">{(totalUnits ?? 0).toLocaleString()}</span>
         </div>
       </CardContent>
     </Card>

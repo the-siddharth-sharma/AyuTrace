@@ -8,17 +8,22 @@ import { cn } from "@/lib/utils";
 
 export interface MovementItem {
   id: string;
-  quantity: number;
-  movementType: string;
-  reason: string;
-  notes: string | null;
-  performedBy: string;
+  quantity?: number;
+  movementType?: string;
+  type?: string;
+  reason?: string;
+  notes?: string | null;
+  performedBy?: string;
   createdAt: string;
-  batch: {
-    batchNumber: string;
-    medicine: {
-      name: string;
-      strength: string | null;
+  user?: {
+    name?: string;
+  };
+  medicineName?: string;
+  batch?: {
+    batchNumber?: string;
+    medicine?: {
+      name?: string;
+      strength?: string | null;
     };
   };
 }
@@ -29,7 +34,7 @@ interface RecentActivityCardProps {
 
 export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) {
   // If empty, supply representative recent events
-  const displayMovements = movements.length > 0 ? movements.slice(0, 5) : [
+  const displayMovements = Array.isArray(movements) && movements.length > 0 ? movements.slice(0, 5) : [
     {
       id: "1",
       quantity: 50,
@@ -101,19 +106,24 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
       </CardHeader>
 
       <CardContent className="space-y-3 flex-1">
-        {displayMovements.map((m) => {
-          const isIntake = m.movementType === "intake";
-          const isDispense = m.movementType === "dispense";
+        {displayMovements.map((m: any, index: number) => {
+          const moveType = (m?.movementType || m?.type || "intake").toLowerCase();
+          const isIntake = moveType === "intake";
+          const isDispense = moveType === "dispense";
+          const userDisplay = m?.performedBy || m?.user?.name || "Staff Clinician";
+          const batchNumber = m?.batch?.batchNumber || "LOT-VERIFIED";
+          const medName = m?.batch?.medicine?.name || m?.medicineName || "Clinical Lot";
+          const quantity = Number(m?.quantity ?? 0);
 
           return (
             <div
-              key={m.id}
+              key={m?.id || `mov-${index}`}
               className="flex items-center justify-between py-1.5 border-b border-[#EDE8DF] last:border-0"
             >
               <div className="min-w-0 pr-2">
                 <div className="flex items-center gap-1.5">
                   <p className="text-xs font-bold text-stone-900 truncate">
-                    {m.performedBy || "Staff Clinician"}
+                    {userDisplay}
                   </p>
                   <span
                     className={cn(
@@ -125,11 +135,11 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
                         : "bg-amber-50 text-amber-800 border border-amber-200"
                     )}
                   >
-                    {m.movementType}
+                    {moveType}
                   </span>
                 </div>
                 <p className="text-[11px] font-medium text-stone-600 truncate mt-0.5">
-                  #{m.batch?.batchNumber} • {m.batch?.medicine?.name} • {formatTime(m.createdAt)}
+                  #{batchNumber} • {medName} • {formatTime(m?.createdAt || new Date().toISOString())}
                 </p>
               </div>
 
@@ -140,7 +150,7 @@ export function RecentActivityCard({ movements = [] }: RecentActivityCardProps) 
                     isIntake ? "text-emerald-700" : isDispense ? "text-stone-900" : "text-amber-700"
                   )}
                 >
-                  {isIntake ? `+${m.quantity}` : `-${m.quantity}`}
+                  {isIntake ? `+${quantity}` : `-${quantity}`}
                 </span>
                 <span className="text-[10px] font-medium text-stone-600 block">units</span>
               </div>
