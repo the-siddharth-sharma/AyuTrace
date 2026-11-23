@@ -10,30 +10,26 @@ import { PrismaClient } from "@prisma/client";
 if (!process.env.DATABASE_URL && !process.env.DIRECT_URL) {
   try {
     const { loadEnvConfig } = require("@next/env");
-    loadEnvConfig(process.cwd(), process.env.NODE_ENV !== "production");
+    loadEnvConfig(process.cwd(), true);
   } catch {}
 }
 
 function getDatabaseUrl(): string {
   let envUrl = process.env.DATABASE_URL?.trim() || process.env.DIRECT_URL?.trim();
 
-  // If a valid PostgreSQL/Supabase URL is provided in the environment, prioritize it
-  if (!envUrl || (!envUrl.startsWith("postgres://") && !envUrl.startsWith("postgresql://"))) {
-    // Provide a safe placeholder only during Next.js build phase if env vars are missing
-    if (process.env.NEXT_PHASE === "phase-production-build" || process.env.NODE_ENV === "test") {
-      return "postgresql://build_placeholder:build_placeholder@localhost:5432/build_db";
+  // If a valid PostgreSQL/Supabase URL is provided in the environment, prioritize and configure it
+  if (envUrl && (envUrl.startsWith("postgres://") || envUrl.startsWith("postgresql://"))) {
+    // Ensure connection limit is optimized for serverless PgBouncer pooler
+    if (envUrl.includes("pgbouncer=true") && !envUrl.includes("connection_limit")) {
+      envUrl += "&connection_limit=1";
     }
-    throw new Error(
-      "Missing or invalid DATABASE_URL environment variable. Please configure DATABASE_URL in your .env or Vercel project settings."
-    );
+    return envUrl;
   }
 
-  // Ensure connection limit is optimized for serverless PgBouncer pooler
-  if (envUrl.includes("pgbouncer=true") && !envUrl.includes("connection_limit")) {
-    envUrl += "&connection_limit=1";
-  }
-
-  return envUrl;
+  // Provide a safe placeholder so Next.js builds, tests, and API routes can initialize
+  // without crashing at module evaluation time. Runtime database operations will fail gracefully
+  // with a clean catchable connection error rather than crashing the serverless lambda.
+  return "postgresql://unconfigured_database_url:missing@localhost:5432/ayutrace_unconfigured";
 }
 
 const globalForPrisma = globalThis as unknown as {
@@ -51,4 +47,4 @@ export const prisma =
     log: process.env.NODE_ENV === "development" ? ["warn", "error"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+globalForPrisma.prisma = prisma;

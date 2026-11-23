@@ -41,10 +41,19 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password, rememberMe }),
       });
 
-      const data = await res.json();
+      let data: any = null;
+      try {
+        data = await res.json();
+      } catch {
+        // Response was not JSON (e.g. 500/504 gateway or proxy response)
+      }
 
-      if (!res.ok || !data.success) {
-        setErrorMessage(data.error || "Authentication failed. Please verify credentials.");
+      if (!res.ok || !data?.success) {
+        const fallbackMsg =
+          res.status >= 500
+            ? "Server or database connection error. Please try again or check cloud settings."
+            : "Authentication failed. Please verify credentials.";
+        setErrorMessage(data?.error || fallbackMsg);
         setIsLoading(false);
         return;
       }
@@ -52,8 +61,12 @@ export default function LoginPage() {
       // Update auth context state and perform a clean browser navigation to dashboard
       login(data.user);
       window.location.href = "/dashboard";
-    } catch (err) {
-      setErrorMessage("Network or connection error. Please try again.");
+    } catch (err: any) {
+      setErrorMessage(
+        err?.message && !err.message.includes("JSON")
+          ? `Network error: ${err.message}`
+          : "Network or connection error. Please try again."
+      );
       setIsLoading(false);
     }
   };
