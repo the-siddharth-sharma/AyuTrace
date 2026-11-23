@@ -50,6 +50,73 @@ interface CachedSession {
 
 const sessionMemoryCache = new Map<string, CachedSession>();
 
+const SESSION_HMAC_SECRET =
+  process.env.SESSION_SECRET ||
+  process.env.AUTH_SECRET ||
+  "ayutrace-statutory-gamp5-session-signing-secret-2026";
+
+/**
+ * Creates a cryptographically signed HMAC-SHA256 session token.
+ * Enables zero-latency stateless verification across independent Vercel serverless functions.
+ */
+export function signToken(user: SafeUser, expiresAt: Date): string {
+  const nonce = crypto.randomBytes(16).toString("hex");
+  const payloadObj = {
+    ...sanitizeUser(user),
+    exp: expiresAt.getTime(),
+    nonce,
+  };
+  const b64Payload = Buffer.from(JSON.stringify(payloadObj)).toString("base64url");
+  const hmac = crypto.createHmac("sha256", SESSION_HMAC_SECRET);
+  hmac.update(b64Payload);
+  const signature = hmac.digest("base64url");
+  return `${b64Payload}.${signature}`;
+}
+
+/**
+ * Verifies and decodes a signed session token without requiring a database query.
+ */
+export function verifySignedToken(token: string): SafeUser | null {
+  try {
+    const dotIndex = token.indexOf(".");
+    if (dotIndex === -1) return null;
+    const b64Payload = token.slice(0, dotIndex);
+    const signature = token.slice(dotIndex + 1);
+
+    const hmac = crypto.createHmac("sha256", SESSION_HMAC_SECRET);
+    hmac.update(b64Payload);
+    const expectedSignature = hmac.digest("base64url");
+
+    if (
+      signature.length !== expectedSignature.length ||
+      !crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expectedSignature))
+    ) {
+      return null;
+    }
+
+    const payloadStr = Buffer.from(b64Payload, "base64url").toString("utf-8");
+    const data = JSON.parse(payloadStr);
+
+    if (data.exp && Date.now() > data.exp) {
+      return null;
+    }
+
+    return {
+      id: data.id,
+      email: data.email,
+      name: data.name,
+      role: data.role,
+      licenseNumber: data.licenseNumber ?? null,
+      department: data.department ?? null,
+      facilityId: data.facilityId ?? null,
+      facility: data.facility ?? null,
+      createdAt: new Date(data.createdAt || Date.now()),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export function setCachedSession(token: string, user: SafeUser, expiresAt: Date) {
   sessionMemoryCache.set(token, {
     user,
@@ -73,15 +140,21 @@ export async function createSession(
   userOrId: string | any,
   rememberMe = true
 ): Promise<string> {
-  const token = crypto.randomBytes(32).toString("hex");
   const durationMs = (rememberMe ? 30 : 1) * 24 * 60 * 60 * 1000;
   const expiresAt = new Date(Date.now() + durationMs);
 
-  const userId = typeof userOrId === "string" ? userOrId : userOrId.id;
+  const safeUser =
+    typeof userOrId === "object" && userOrId !== null ? sanitizeUser(userOrId) : null;
+  const userId = safeUser ? safeUser.id : userOrId;
+
+  // Generate self-contained signed HMAC token when user object is available
+  const token = safeUser
+    ? signToken(safeUser, expiresAt)
+    : crypto.randomBytes(32).toString("hex");
 
   // Prime the in-memory cache immediately so layout authentication doesn't hit DB
-  if (typeof userOrId === "object" && userOrId !== null) {
-    setCachedSession(token, sanitizeUser(userOrId), expiresAt);
+  if (safeUser) {
+    setCachedSession(token, safeUser, expiresAt);
   }
 
   const cookieStore = await cookies();
@@ -156,7 +229,14 @@ export async function getCurrentUser(): Promise<SafeUser | null> {
       sessionMemoryCache.delete(token);
     }
 
-    // 2. Single-query SQL JOIN for session + user + facility in 1 round trip
+    // 2. Stateless cryptographic token verification (enables zero-latency verification across independent Vercel lambdas)
+    const verifiedUser = verifySignedToken(token);
+    if (verifiedUser) {
+      setCachedSession(token, verifiedUser, new Date(now + 30 * 24 * 60 * 60 * 1000));
+      return verifiedUser;
+    }
+
+    // 3. Fallback: Single-query SQL JOIN for legacy hex sessions in DB
     const rows = await prisma.$queryRaw<
       Array<{
         session_id: string;
