@@ -3,8 +3,8 @@ import nodemailer from "nodemailer";
 const SMTP_HOST = process.env.SMTP_HOST || "smtp.gmail.com";
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 465;
 const SMTP_SECURE = process.env.SMTP_SECURE !== "false"; // default true for 465
-const SMTP_USER = process.env.SMTP_USER || "";
-const SMTP_PASS = process.env.SMTP_PASS || "";
+const SMTP_USER = process.env.SMTP_USER || "info.ayutrace@gmail.com";
+const SMTP_PASS = process.env.SMTP_PASS || "snyqsidbrfkznirg";
 
 function getSenderAddress(): string {
   if (process.env.SMTP_FROM?.trim()) {

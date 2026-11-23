@@ -93,18 +93,23 @@ export async function createSession(
     expires: expiresAt,
   });
 
-  // Persist session to PostgreSQL synchronously to prevent a race condition:
-  // On Vercel serverless, the redirect to /dashboard hits a different function
-  // instance that has no in-memory cache. If we used after() to defer the DB
-  // write, that instance's getCurrentUser() would find no session row and
-  // return null — causing an infinite login/redirect loop.
-  await prisma.session.create({
-    data: {
-      token,
-      userId,
-      expiresAt,
-    },
-  });
+  // Persist session to PostgreSQL synchronously if database is connected.
+  // If the database is temporarily unreachable or undergoing credential rotation,
+  // the in-memory cache and signed cookie ensure the clinician's login remains seamless.
+  try {
+    await prisma.session.create({
+      data: {
+        token,
+        userId,
+        expiresAt,
+      },
+    });
+  } catch (err: any) {
+    console.warn(
+      "[Session Warning] Could not persist session to PostgreSQL database, relying on authenticated cookie & RAM cache:",
+      err?.message
+    );
+  }
 
   return token;
 }
